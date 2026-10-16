@@ -11,6 +11,7 @@ type QuickstartConversationLayoutProps = {
   visualizer: ReactNode;
   controls: ReactNode;
   onEndConversation: () => void;
+  ending?: boolean;
 };
 
 export function QuickstartConversationLayout({
@@ -20,10 +21,11 @@ export function QuickstartConversationLayout({
   visualizer,
   controls,
   onEndConversation,
+  ending = false,
 }: QuickstartConversationLayoutProps) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col text-left">
-      <header className="flex shrink-0 flex-col gap-4 border-b border-border px-4 py-4 md:h-[76px] md:flex-row md:items-center md:justify-between md:px-6 md:py-0">
+    <div className="starter-layout flex min-h-0 flex-1 flex-col text-left">
+      <header className="flex shrink-0 flex-col gap-4 border-b border-border px-4 py-4 md:min-h-[96px] md:flex-row md:items-center md:justify-between md:px-6 md:py-0">
         <div className="flex min-w-0 items-center gap-3">
           <Image
             src="/agora-logo-mark.svg"
@@ -34,8 +36,9 @@ export function QuickstartConversationLayout({
           />
           <div className="flex min-w-0 flex-col justify-center gap-1">
             <span className="truncate text-lg font-semibold leading-none tracking-[-0.025em] text-foreground">
-              Agora Conversational AI
+              Event Reminder · 04
             </span>
+            <p className="text-xs leading-5 text-muted-foreground">Confirm your plans and ask Riley about joining.</p>
             {pipelineMetrics}
           </div>
         </div>
@@ -47,10 +50,11 @@ export function QuickstartConversationLayout({
             size="sm"
             className="h-8 rounded-md border border-destructive bg-transparent px-3 text-xs font-medium text-destructive hover:bg-destructive/10"
             onClick={onEndConversation}
-            aria-label="End conversation with AI agent"
-            title="End conversation"
+            disabled={ending}
+            aria-label="End reminder"
+            title="End reminder"
           >
-            End Conversation
+            {ending ? 'Ending…' : 'End reminder'}
           </Button>
         </div>
       </header>
@@ -60,12 +64,12 @@ export function QuickstartConversationLayout({
           {transcriptPanel}
         </aside>
 
-        <main className="order-1 flex min-h-0 flex-1 flex-col lg:order-2 lg:border-l lg:border-border/80 lg:pl-6">
+        <main className="order-1 flex min-h-[26rem] shrink-0 flex-1 flex-col lg:min-h-0 lg:shrink lg:order-2 lg:border-l lg:border-border/80 lg:pl-6">
           <div className="flex min-h-0 flex-1 flex-col pb-2 pt-3 md:pb-6">
             <div className="flex min-h-0 flex-1 items-center justify-center">
               {visualizer}
             </div>
-            <div className="shrink-0 pt-4">{controls}</div>
+            <div className="shrink-0 pb-4 pt-8">{controls}</div>
           </div>
         </main>
       </div>

@@ -1,5 +1,9 @@
 # 01 Setup
 
+## Scenario 04 setup
+
+Run one long-lived Node process. Voice, result display and CSV need no external business service or database. Registration updates additionally need TOP_TEN_SCENARIO_TOOL_BASE_URL pointing to this SAME app over public HTTPS. Without it, voice is discussion-only and cannot record registration changes. No tunnel/deployment is automatically provisioned. Start event reminder begins voice directly. Run pnpm run verify:scenario as well as the full verify chain.
+
 > Environment setup, commands, and safe verification flow for this quickstart.
 
 ## Runtime Requirements
@@ -61,7 +65,7 @@ Requires env/project binding:
 ## Local Run Notes
 
 - App + API routes run at `http://localhost:3000`.
-- Session starts from `QuickstartPreCallCard` (`Try it now`) and bootstraps token + RTM + invite flow.
+- Start event reminder creates temporary state and starts the token + RTM + invite flow directly.
 - If transcript or agent join fails, first run `agora project doctor --deep`.
 
 ## CI Expectations

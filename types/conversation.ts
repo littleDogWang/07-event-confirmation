@@ -34,4 +34,5 @@ export interface ConversationComponentProps {
   rtmClient: RTMClient;
   onTokenWillExpire: (uid: string) => Promise<AgoraRenewalTokens>;
   onEndConversation: () => void;
+  ending?: boolean;
 }

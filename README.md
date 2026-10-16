@@ -1,4 +1,27 @@
-# Agora Conversational AI Next.js Quickstart
+# 04 · Event Reminder & Confirmation
+
+Review a participant’s webinar registration, record their response, and download the result as CSV. Each review is isolated and temporary; no database, CRM, calendar, knowledge service or messaging integration is required.
+
+## Scenario 04 workflow
+
+1. Run `pnpm dev` and choose **Start event reminder** on the starter entry card. This starts the voice conversation directly.
+2. Talk with Riley about attendance, alternative sessions and joining details. The main interface is the conversation and voice controls; event context and recorded results are secondary.
+3. With registration tools configured, successful tool results update the response card. End the reminder and **Download CSV** to keep the result. Spoken intent alone never creates a saved response.
+4. **Start another reminder** opens a new voice session with an isolated example registration. Results from the previous session remain until the next conversation successfully starts. Refreshing or restarting may lose access.
+
+**Voice and registration updates:** the existing Agora pipeline supports conversation without a public callback URL. Set `TOP_TEN_SCENARIO_TOOL_BASE_URL=https://your-app.example.com` to this same app to enable registration updates via REST tools. Without it, Riley explicitly explains that the call is discussion-only and cannot record changes; voice is still available. No manual response form replaces the conversation.
+
+**Temporary results:** one long-running Node process holds isolated review state. It is not shared between serverless workers or multiple instances. No database, browser storage, CRM, calendar or messaging service is added, and no tunnel/deployment is created automatically.
+
+**Boundaries:** the event and participant are fixed examples. Changes affect this experience only. Recording/callback preferences do not send messages or schedule calls. Confirmed intent is separate from actual attendance, which is not tracked.
+
+**UI:** restored official starter entry, transcript, layout and agora-agent-uikit visualizer/microphone controls. Agent-ui adoption is paused for scenario 04; scenario 01 is unchanged. The temporary response card and CSV export remain available.
+
+**Checks:** `pnpm run verify:scenario` covers registration behavior, isolation, idempotency, expiry, discussion-only startup and CSV. `pnpm run verify` includes the full verification chain.
+
+## Quickstart foundation
+
+The following documentation describes the underlying Agora Next.js starter. Scenario 04 uses its starter UI with scenario-specific copy and the business workflow above.
 
 [![Build](https://github.com/AgoraIO-Conversational-AI/agent-quickstart-nextjs/actions/workflows/build-check.yml/badge.svg)](https://github.com/AgoraIO-Conversational-AI/agent-quickstart-nextjs/actions/workflows/build-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
@@ -52,7 +75,7 @@ Getting started is quick and easy: install the CLI _(skip if you already have it
    pnpm dev
    ```
 
-3. Open [http://localhost:3000](http://localhost:3000) and click **Start conversation**.
+3. Open [http://localhost:3000](http://localhost:3000) and choose **Start event reminder**.
 
 If the agent does not join or transcripts do not appear, run **`agora project doctor --deep`** to check credentials, feature enablement, network reachability, and local env binding.
 
@@ -71,7 +94,9 @@ agora project doctor --deep
 pnpm dev
 ```
 
-### Deploy to Vercel
+### Base quickstart deployment to Vercel
+
+Scenario 04 requires one long-running Node process for its temporary review store. The inherited Vercel setup below covers the base voice shell; serverless workers do not share registration results. Use a single Node instance for the complete scenario.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAgoraIO-Conversational-AI%2Fagent-quickstart-nextjs&project-name=agent-quickstart-nextjs&repository-name=agent-quickstart-nextjs&env=NEXT_PUBLIC_AGORA_APP_ID,NEXT_AGORA_APP_CERTIFICATE&envDescription=Agora%20credentials%20needed%20to%20run%20the%20app&envLink=https%3A%2F%2Fgithub.com%2FAgoraIO-Conversational-AI%2Fagent-quickstart-nextjs%23run-it&demo-title=Agora%20Conversational%20AI%20Next.js%20Quickstart&demo-description=Official%20Next.js%20quickstart%20for%20building%20browser-based%20voice%20AI%20with%20Agora&demo-image=https%3A%2F%2Fraw.githubusercontent.com%2FAgoraIO-Conversational-AI%2Fagent-quickstart-nextjs%2Fmain%2F.github%2Fassets%2FConversation-Ai-Client.gif)
 

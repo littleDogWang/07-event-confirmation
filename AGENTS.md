@@ -2,6 +2,23 @@
 
 This guide is for coding agents making changes in `agent-quickstart-nextjs`.
 
+## Shared scenario UI requirements
+
+### Current UI exception for scenarios 03 and 04
+
+At the user's request, scenarios 03 and 04 use the official quickstart starter UI while agent-ui adoption is paused. Scenario 01 keeps its existing agent-ui implementation. This exception takes precedence over earlier adoption plans.
+
+- Use a scenario-specific starter entry card with task title, description, action, loading/error copy and accessible labels. No agent-ui Dialog is required.
+- Keep the scenario name, identifier and purpose identifiable in the entry and active conversation. Activity state must not replace the scenario identity.
+- Use starter components, agora-agent-uikit visualizer/microphone controls, Tailwind 3 and the starter theme. Do not reintroduce shczhen/agent-ui source, theme or dependencies without an explicit user request.
+- Preserve scenario business workflows, API contracts, authoritative results, RTC/RTM lifecycle and hook ownership. Verify actual desktop/mobile rendering; simulated UI acceptance does not prove real voice/tool execution.
+
+The shared specification lives at `scenario-repos/SCENARIO_UI_RULES.md` in the workspace (`../SCENARIO_UI_RULES.md` relative to this file). This exception is self-contained for independent clones.
+
+## Repository language
+
+Use English for repository content, including documentation, code comments, UI copy and examples. Keep future additions and edits free of Chinese text.
+
 ## How to Load
 
 This repository uses progressive disclosure documentation. Docs live under `docs/ai/` in three levels.
@@ -22,16 +39,27 @@ The sections below (Start Here, Patterns, Anti-Patterns, etc.) remain the canoni
 - Use [docs/ai/L1/L2/transcript_pipeline.md](docs/ai/L1/L2/transcript_pipeline.md) for transcript and RTM behavior.
 - For layout and responsibilities inside `components/`, `app/api/`, and `lib/`, use [docs/ai/L1/03_code_map.md](docs/ai/L1/03_code_map.md) and [docs/ai/L1/02_architecture.md](docs/ai/L1/02_architecture.md).
 
+## Scenario 04 runtime contract
+
+- Event/session fixtures are immutable. State changes target one participant registration in one temporary review.
+- Store sessions only in process memory; keep the last confirmed snapshot in browser React state for display/CSV after ending. Do not add a database, disk files or localStorage.
+- Session create returns a random capability. Read/update/finish requests use x-event-session; cloud tools bind that header server-side and use tool_call_id for idempotency.
+- Voice starts directly from the starter entry card. TOP_TEN_SCENARIO_TOOL_BASE_URL enables registration updates; without it use an explicit discussion-only prompt and return recording_available=false, never block voice or infer a saved response. No manual response form.
+- Run one long-lived Node process. Multiple instances/serverless workers do not share this store. Expired/restarted reviews may disappear; preserve the browser snapshot and let users download it.
+- Cancellation and rescheduling must never cancel the whole event or modify its timetable. Recording/contact preferences must never imply delivery, scheduled callbacks or actual attendance.
+- Keep scenario identity visible, wire starter controls to real callbacks, and preserve RTC/RTM lifecycle invariants.
+- Run pnpm run verify:scenario and pnpm run verify. Verify desktop/mobile rendering and actual voice-entry/download/ended/reset behavior; report real cloud voice acceptance separately.
+
 ## Current System Shape
 
 - App shell: Next.js 16 App Router, React 19, and TypeScript
 - Client RTC: `agora-rtc-react` hooks over `agora-rtc-sdk-ng`
 - Messaging: `agora-rtm` for transcripts, agent state, metrics, and error events
 - Toolkit core: `agora-agent-client-toolkit` for `AgoraVoiceAI`, transcript helpers, and turn status
-- UI components: `agora-agent-uikit` for visualizer, transcript, and mic controls
+- UI components: starter transcript/layout and `agora-agent-uikit` visualizer/microphone controls
 - Server SDK: `agora-agents` for managed agent session startup
 - API routes: token generation, agent invite, chat, and stop routes live in `app/api`
-- Default agent config: Agora-managed STT, LLM, and TTS; `.env.local` contains only Agora project credentials
+- Default agent config: Agora-managed STT, LLM, and TTS. Agora project credentials are required; `TOP_TEN_SCENARIO_TOOL_BASE_URL` additionally enables voice REST updates.
 
 ## Supported Modes
 
@@ -41,7 +69,9 @@ The sections below (Start Here, Patterns, Anti-Patterns, etc.) remain the canoni
 - Next.js serves the app and the route handlers at `http://localhost:3000`.
 - Local credentials are read from `.env.local`, usually written by `agora project env write .env.local`.
 
-### Vercel Deployment
+### Base quickstart only: Vercel deployment
+
+Scenario 04 review results require one long-running Node process. Do not present serverless deployment as supporting the temporary registration store.
 
 - Deploy the repository as a single Next.js app.
 - Set `NEXT_PUBLIC_AGORA_APP_ID` and `NEXT_AGORA_APP_CERTIFICATE` in the deployment target.
@@ -121,7 +151,7 @@ useEffect(() => {
 ### Tokens and Styling
 
 - RTM token access must come from `RtcTokenBuilder.buildTokenWithRtm`; a standard RTC-only token does not grant RTM access.
-- Tailwind must scan uikit classes with `./node_modules/agora-agent-uikit/dist/**/*.{js,mjs}` in `tailwind.config.ts`.
+- Tailwind 3 scans starter and uikit source in tailwind.config.ts. Theme tokens are HSL channels: use hsl(var(--primary)).
 
 ## Working Rules
 

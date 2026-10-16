@@ -1,5 +1,9 @@
 # 04 Conventions
 
+## Scenario 04 UI and state rules
+
+Use the restored starter UI and Tailwind 3 config. Semantic tokens are HSL channels, used with hsl(var(--token)). Agent-ui adoption is paused for scenario 04. Keep changes scoped to the session-bound participant and render only authoritative API results. Ended results stay in browser memory; new reviews use fresh fixtures. All repository additions are English.
+
 > Implementation conventions that protect lifecycle correctness, transcript accuracy, and docs/code alignment.
 
 ## React and RTC Lifecycle

@@ -61,7 +61,7 @@ Do not recreate Agora ConvoAI integration from memory. Provider schemas, SDK bui
 ## Stable Contracts
 
 - `GET /api/generate-agora-token` returns `{ token, uid, channel }`.
-- `POST /api/invite-agent` accepts `{ requester_id, channel_name }` and returns the agent id/state payload.
+- `POST /api/invite-agent` accepts `{ requester_id, channel_name, event_session_id }` in scenario 04 and returns the agent id/state payload.
 - `POST /api/stop-conversation` accepts `{ agent_id }` and treats already-stopping sessions as success.
 - Required env vars are `NEXT_PUBLIC_AGORA_APP_ID` and `NEXT_AGORA_APP_CERTIFICATE`.
 - `components/LandingPage.tsx` owns pre-call bootstrap and RTM client lifecycle.
@@ -81,3 +81,7 @@ Do not recreate Agora ConvoAI integration from memory. Provider schemas, SDK bui
 3. Run `pnpm run doctor` and `pnpm run dev`.
 4. Validate with `pnpm run verify` before sharing modifications.
 5. Customize agent behavior and UI using the supported surfaces above.
+
+## Scenario 04 adaptation
+
+Temporary review APIs and participant-only registration actions extend the base. LandingPage owns the last confirmed result and retains it after ending for CSV. The starter entry/transcript/layout and uikit visualizer/microphone controls are retained with scenario-specific copy. Registration writes additionally need the public HTTPS tool base URL; voice remains available in explicit discussion-only mode without it; no database or external business integration is required. Use one long-lived Node process.

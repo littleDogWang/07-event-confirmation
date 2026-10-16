@@ -1,5 +1,16 @@
 # 03 Code Map
 
+## Scenario 04 files
+
+- scenarios/04-event-confirmation/types.ts: shared fixture-derived types and presentation labels.
+- scenarios/04-event-confirmation/events.ts: temporary session store, registration actions, expiry and idempotency.
+- scenarios/04-event-confirmation/export.ts: CSV generation.
+- scenarios/04-event-confirmation/http.ts and app/api/scenarios/04-event-confirmation/: capability-scoped session/result APIs.
+- scenarios/tool-contracts.ts: public HTTPS REST tools bound to the current review.
+- components/EventResultCard.tsx: authoritative voice-tool results and CSV download; LandingPage starts voice directly.
+- components/QuickstartTranscriptPanel.tsx and QuickstartConversationLayout.tsx: starter transcript and layout; tailwind.config.ts: Tailwind 3 scanning.
+- scripts/verify-event-confirmation.ts: domain/API/export regression checks.
+
 > Directory-level ownership map and where to change behavior safely.
 
 ## Top-Level Layout

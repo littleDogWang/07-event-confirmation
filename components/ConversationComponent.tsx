@@ -95,10 +95,12 @@ export default function ConversationComponent({
   rtmClient,
   onTokenWillExpire,
   onEndConversation,
+  ending = false,
 }: ConversationComponentProps) {
   const client = useRTCClient();
   const remoteUsers = useRemoteUsers();
   const [isEnabled, setIsEnabled] = useState(true);
+  const [micPending, setMicPending] = useState(false);
   const [isAgentConnected, setIsAgentConnected] = useState(false);
   const [isConnectionDetailsOpen, setIsConnectionDetailsOpen] = useState(false);
 
@@ -440,11 +442,14 @@ export default function ConversationComponent({
       setIsEnabled(next);
       return;
     }
+    setMicPending(true);
     try {
       await track.setEnabled(next);
       setIsEnabled(next);
     } catch (error) {
       console.error('Failed to toggle microphone:', error);
+    } finally {
+      setMicPending(false);
     }
   }, [isEnabled, localMicrophoneTrack]);
 
@@ -463,10 +468,6 @@ export default function ConversationComponent({
   }, [client, onTokenWillExpire, joinedUID, rtmClient]);
 
   useClientEvent(client, 'token-privilege-will-expire', handleTokenWillExpire);
-
-  const handleEndConversation = useCallback(async () => {
-    onEndConversation();
-  }, [onEndConversation]);
 
   return (
     <QuickstartConversationLayout
@@ -507,7 +508,7 @@ export default function ConversationComponent({
           role="group"
           aria-label="Audio controls"
         >
-          <div className="conversation-mic-host flex items-center justify-center">
+          <fieldset disabled={ending || micPending || !localMicrophoneTrack} aria-label="Microphone control" className="conversation-mic-host flex items-center justify-center">
             <MicButtonWithVisualizer
               isEnabled={isEnabled}
               setIsEnabled={setIsEnabled}
@@ -518,11 +519,12 @@ export default function ConversationComponent({
               enabledColor="hsl(var(--primary))"
               disabledColor="hsl(var(--destructive))"
             />
-          </div>
+          </fieldset>
           <MicrophoneSelector localMicrophoneTrack={localMicrophoneTrack} />
         </div>
       }
-      onEndConversation={handleEndConversation}
+      onEndConversation={onEndConversation}
+      ending={ending}
     />
   );
 }

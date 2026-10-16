@@ -1,5 +1,9 @@
 # 05 Workflows
 
+## Scenario 04 review and verification
+
+Start event reminder creates temporary state and starts voice directly. Configured cloud REST tools update that review; without them, voice explicitly discusses the event without writing. End reminder preserves the last snapshot for Download CSV. Start another reminder resets only that experience. Run pnpm run verify:scenario for domain/API/CSV checks and pnpm run verify for all checks. Render desktop/mobile starter entry, conversation, auxiliary result, errors, ended and reset states. Live microphone/tool calls are a separate acceptance boundary.
+
 > Repeatable task recipes for common quickstart changes and validation loops.
 
 ## Run Locally

@@ -2,8 +2,12 @@
 
 import { useState, useRef, Suspense, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
-import type { EventSnapshot } from '@/scenarios/04-event-confirmation/types';
+import { CalendarCheck2, CalendarDays } from 'lucide-react';
+import { EventResultCard } from './EventResultCard';
+import {
+  formatEventTime,
+  type EventSnapshot,
+} from '@/scenarios/04-event-confirmation/types';
 import type { RTMClient } from 'agora-rtm';
 import type {
   AgoraTokenData,
@@ -60,10 +64,11 @@ const sessionEndpoint = '/api/scenarios/04-event-confirmation/sessions';
 export default function LandingPage() {
   const [result, setResult] = useState<EventSnapshot | null>(null);
   const [showConversation, setShowConversation] = useState(false);
+  const [recordingAvailable, setRecordingAvailable] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [, setEnding] = useState(false);
+  const [ending, setEnding] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [, setSyncError] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
   const [agoraData, setAgoraData] = useState<AgoraTokenData | null>(null);
   const [rtmClient, setRtmClient] = useState<RTMClient | null>(null);
   const voiceStartPending = useRef(false);
@@ -163,6 +168,7 @@ export default function LandingPage() {
       await startedRtm.login({ token: tokenData.token });
       await startedRtm.subscribe(tokenData.channel);
       setResult(nextResult);
+      setRecordingAvailable(startedAgent!.recording_available === true);
       setSyncError(null);
       setAgoraData({ ...tokenData, agentId: startedAgent!.agent_id });
       setRtmClient(startedRtm);
@@ -262,78 +268,102 @@ export default function LandingPage() {
     }
   };
 
+  const slot = result?.event.sessions.find(
+    (item) => item.sessionId === result.registration.sessionId,
+  );
   return (
-    <div className="relative flex h-dvh min-h-screen flex-col overflow-hidden bg-background text-foreground">
-      {/* Hero shell: either shows the pre-call CTA or swaps in the live conversation experience. */}
-      <div
-        className={`flex min-h-0 flex-1 flex-col ${
-          showConversation
-            ? 'items-stretch justify-start'
-            : 'items-center justify-center'
-        }`}
-      >
-        <div
-          className={`z-10 flex min-h-0 flex-1 flex-col ${
-            showConversation
-              ? 'h-full w-full max-w-none items-stretch gap-0 px-0 text-left'
-              : 'w-full max-w-none items-center justify-center px-4 text-center'
-          }`}
-        >
-          {!showConversation ? (
-            <QuickstartPreCallCard
-              isLoading={isLoading}
-              error={error}
-              onStartConversation={handleStartConversation}
-            />
-          ) : agoraData && rtmClient ? (
-            <>
-              {/* Browser-only conversation mount: RTC provider, error boundary, and lazy-loaded call UI. */}
-              <Suspense fallback={<LoadingSkeleton />}>
-                <ErrorBoundary>
-                  <AgoraProvider>
-                    <ConversationComponent
-                      agoraData={agoraData}
-                      rtmClient={rtmClient}
-                      onTokenWillExpire={handleTokenWillExpire}
-                      onEndConversation={finishReview}
-                    />
-                  </AgoraProvider>
-                </ErrorBoundary>
-              </Suspense>
-            </>
-          ) : (
-            /* Fallback if session bootstrap partially succeeded but required state is missing. */
-            <p className="text-sm text-muted-foreground">
-              Failed to load conversation data.
-            </p>
-          )}
+    <div className="event-shell">
+      <header className="event-header">
+        <div className="event-brand">
+          <div className="event-mark">
+            <CalendarCheck2 />
+          </div>
+          <div>
+            <div className="event-title-row">
+              <h1>Event Reminder Assistant</h1>
+              <span className="event-scenario">04</span>
+            </div>
+            <p>Talk through your plans with Riley.</p>
+          </div>
         </div>
-      </div>
-
-      {/* Persistent attribution footer for the pre-call and in-call views. */}
-      <footer className="fixed bottom-0 right-0 z-40 py-4 pr-4 md:py-6 md:pr-6">
-        <div className="flex items-center justify-end gap-2 text-muted-foreground">
-          <span className="text-xs font-medium tracking-wide uppercase">
-            Powered by
-          </span>
+        <span className="event-powered">
+          Powered by{' '}
           <a
             href="https://agora.io/en/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary transition-colors"
-            aria-label="Visit Agora's website"
           >
-            <Image
-              src="/agora-logo-rgb-blue.svg"
-              alt="Agora"
-              width={86}
-              height={24}
-              priority
-              className="h-6 w-auto hover:opacity-80 transition-opacity translate-y-1"
-            />
-            <span className="sr-only">Agora</span>
+            Agora
           </a>
-        </div>
+        </span>
+      </header>
+      <main className={'event-main ' + (!showConversation ? 'event-idle' : '')}>
+        {!showConversation ? (
+          <QuickstartPreCallCard
+            isLoading={isLoading}
+            error={error}
+            ended={!!result?.ended}
+            onStartConversation={handleStartConversation}
+          />
+        ) : agoraData && rtmClient ? (
+          <>
+            <div className="event-call-heading">
+              <span className="event-eyebrow">VOICE EVENT REMINDER</span>
+              <h2>Let’s confirm your plans.</h2>
+            </div>
+            <details className="event-context">
+              <summary>
+                <CalendarDays />
+                <span>{result!.event.title}</span>
+                <span className="event-context-time">
+                  {formatEventTime(slot!.startsAt)}
+                </span>
+              </summary>
+              <div>
+                <p>{result!.event.description}</p>
+                <p>
+                  {result!.event.location} · {slot!.durationMinutes} minutes ·{' '}
+                  {result!.registration.participantName}
+                </p>
+                <p>{result!.event.joiningInstructions}</p>
+                <p>{result!.event.recordingInfo}</p>
+              </div>
+            </details>
+            {!recordingAvailable && (
+              <p className="event-recording-notice" role="status">
+                You can discuss the event with Riley. Registration changes
+                cannot be recorded in this session.
+              </p>
+            )}
+            {error && (
+              <p className="event-error" role="alert">
+                {error}
+              </p>
+            )}
+            <Suspense fallback={<LoadingSkeleton />}>
+              <ErrorBoundary>
+                <AgoraProvider>
+                  <ConversationComponent
+                    agoraData={agoraData}
+                    rtmClient={rtmClient}
+                    onTokenWillExpire={handleTokenWillExpire}
+                    onEndConversation={finishReview}
+                    ending={ending}
+                  />
+                </AgoraProvider>
+              </ErrorBoundary>
+            </Suspense>
+          </>
+        ) : null}
+        {result && (
+          <div className="event-result-host">
+            <EventResultCard result={result} syncError={syncError} />
+          </div>
+        )}
+      </main>
+      <footer className="event-footer">
+        Event reminder & confirmation
+        <span>Temporary responses · Download to keep a copy</span>
       </footer>
     </div>
   );
