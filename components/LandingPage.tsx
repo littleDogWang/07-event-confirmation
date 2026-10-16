@@ -3,6 +3,7 @@
 import { useState, useRef, Suspense, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import type { EventSnapshot } from '@/scenarios/04-event-confirmation/types';
 import type { RTMClient } from 'agora-rtm';
 import type {
   AgoraTokenData,
@@ -54,151 +55,211 @@ const AgoraProvider = dynamic(
   { ssr: false },
 );
 
-export default function LandingPage() {
-  const [showConversation, setShowConversation] = useState(false);
+const sessionEndpoint = '/api/scenarios/04-event-confirmation/sessions';
 
-  // Preload heavy modules on mount so they're already cached when the user
-  // clicks "Try it Now" — eliminates the ~1.8s dynamic-import delay.
-  useEffect(() => {
-    import('agora-rtc-react').catch(() => {});
-    import('agora-rtm').catch(() => {});
-  }, []);
+export default function LandingPage() {
+  const [result, setResult] = useState<EventSnapshot | null>(null);
+  const [showConversation, setShowConversation] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [, setEnding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [, setSyncError] = useState<string | null>(null);
   const [agoraData, setAgoraData] = useState<AgoraTokenData | null>(null);
   const [rtmClient, setRtmClient] = useState<RTMClient | null>(null);
-  const [agentJoinError, setAgentJoinError] = useState(false);
+  const voiceStartPending = useRef(false);
+  const operationPending = useRef(false);
+
+  const acceptResult = useCallback((next: EventSnapshot) => {
+    setResult((current) =>
+      current &&
+      current.sessionId === next.sessionId &&
+      next.revision >= current.revision
+        ? { ...next, ended: current.ended || next.ended }
+        : current,
+    );
+  }, []);
+
+  const reviewId = result?.sessionId;
+  const reviewEnded = result?.ended;
+
+  // Poll only while voice tools can update this registration. Keep a browser copy after ending.
+  useEffect(() => {
+    if (!reviewId || !showConversation || reviewEnded) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const sessionId = reviewId;
+    const refresh = async () => {
+      try {
+        const response = await fetch(sessionEndpoint, {
+          headers: { 'x-event-session': sessionId },
+          cache: 'no-store',
+        });
+        if (!response.ok)
+          throw new Error('Your response could not be refreshed.');
+        const data = await response.json();
+        if (!cancelled) {
+          acceptResult(data.result);
+          setSyncError(null);
+        }
+      } catch {
+        if (!cancelled) setSyncError('Your response could not be refreshed.');
+      }
+      if (!cancelled) timer = setTimeout(refresh, 1200);
+    };
+    void refresh();
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [reviewId, reviewEnded, showConversation, acceptResult]);
 
   const handleStartConversation = async () => {
+    if (
+      voiceStartPending.current ||
+      operationPending.current ||
+      showConversation
+    )
+      return;
+    voiceStartPending.current = true;
     setIsLoading(true);
     setError(null);
-    setAgentJoinError(false);
-
+    let startedAgent: AgentResponse | null = null;
+    let startedRtm: RTMClient | null = null;
     try {
-      // 1. Fetch RTC token + channel
-      // console.log('Fetching Agora token...');
-      const agoraResponse = await fetch('/api/generate-agora-token');
-      const responseData = await agoraResponse.json();
-      // console.log('Agora token response: uid =', responseData.uid, 'channel =', responseData.channel);
-
-      if (!agoraResponse.ok) {
+      const reviewResponse = await fetch(sessionEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create' }),
+      });
+      if (!reviewResponse.ok)
         throw new Error(
-          `Failed to generate Agora token: ${JSON.stringify(responseData)}`,
+          'Could not start the event reminder. Please try again.',
         );
-      }
-
-      // 2. Run agent invite and RTM setup in parallel — both only need the token response.
-      //    RTM must be ready before ConversationComponent mounts so AgoraVoiceAI
-      //    can subscribe immediately. Agent invite is non-fatal.
-      const [agentData, rtm] = await Promise.all([
-        // 2a. Start the AI agent
-        fetch('/api/invite-agent', {
+      const reviewData = await reviewResponse.json();
+      const nextResult: EventSnapshot = reviewData.result;
+      const tokenResponse = await fetch('/api/generate-agora-token');
+      if (!tokenResponse.ok)
+        throw new Error('Could not connect to Riley. Please try again.');
+      const tokenData: AgoraTokenData = await tokenResponse.json();
+      const inviteResponse = await fetch('/api/invite-agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requester_id: tokenData.uid,
+          channel_name: tokenData.channel,
+          event_session_id: nextResult.sessionId,
+        } as ClientStartRequest),
+      });
+      if (!inviteResponse.ok)
+        throw new Error(
+          'Could not start the event reminder. Please try again.',
+        );
+      startedAgent = await inviteResponse.json();
+      const { default: AgoraRTM } = await import('agora-rtm');
+      startedRtm = new AgoraRTM.RTM(
+        process.env.NEXT_PUBLIC_AGORA_APP_ID!,
+        tokenData.uid,
+      );
+      await startedRtm.login({ token: tokenData.token });
+      await startedRtm.subscribe(tokenData.channel);
+      setResult(nextResult);
+      setSyncError(null);
+      setAgoraData({ ...tokenData, agentId: startedAgent!.agent_id });
+      setRtmClient(startedRtm);
+      setShowConversation(true);
+    } catch (error) {
+      await startedRtm?.logout().catch(() => {});
+      if (startedAgent)
+        await fetch('/api/stop-conversation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            requester_id: responseData.uid,
-            channel_name: responseData.channel,
-          } as ClientStartRequest),
-        })
-          .then(async (res) => {
-            if (!res.ok) {
-              setAgentJoinError(true);
-              return null;
-            }
-            return res.json() as Promise<AgentResponse>;
-          })
-          .catch((err) => {
-            console.error('Failed to start conversation with agent:', err);
-            setAgentJoinError(true);
-            return null;
-          }),
-
-        // 2b. Set up RTM (dynamically imported to keep it client-only)
-        (async () => {
-          const { default: AgoraRTM } = await import('agora-rtm');
-          const rtm: RTMClient = new AgoraRTM.RTM(
-            process.env.NEXT_PUBLIC_AGORA_APP_ID!,
-            responseData.uid,
-          );
-          await rtm.login({ token: responseData.token });
-          await rtm.subscribe(responseData.channel);
-          // console.log('RTM ready, channel:', responseData.channel);
-          return rtm;
-        })(),
-      ]);
-
-      // 3. All dependencies ready — store state and show conversation
-      setRtmClient(rtm);
-      setAgoraData({ ...responseData, agentId: agentData?.agent_id });
-      setShowConversation(true);
-    } catch (err) {
-      setError('Failed to start conversation. Please try again.');
-      console.error('Error starting conversation:', err);
+          body: JSON.stringify({ agent_id: startedAgent.agent_id }),
+        }).catch(() => {});
+      setError(
+        error instanceof Error &&
+          !(error instanceof TypeError) &&
+          !(error instanceof SyntaxError)
+          ? error.message
+          : 'Voice assistance could not connect.',
+      );
     } finally {
       setIsLoading(false);
+      voiceStartPending.current = false;
     }
   };
 
   const handleTokenWillExpire = useCallback(
     async (uid: string): Promise<AgoraRenewalTokens> => {
-      try {
-        const channel = agoraData?.channel;
-        if (!channel) {
-          throw new Error('Missing channel for token renewal');
-        }
-
-        // RTC and RTM tokens are renewed independently:
-        //   - RTC uses the browser client's assigned UID (passed in from ConversationComponent).
-        //   - RTM uses the same UID that was used during RTM login (agoraData.uid).
-        // Both are fetched in parallel to stay within the token-expiry grace-period window.
-        const [rtcResponse, rtmResponse] = await Promise.all([
-          fetch(`/api/generate-agora-token?channel=${channel}&uid=${uid}`),
-          fetch(`/api/generate-agora-token?channel=${channel}&uid=${agoraData.uid}`),
-        ]);
-        const [rtcData, rtmData] = await Promise.all([
-          rtcResponse.json(),
-          rtmResponse.json(),
-        ]);
-
-        if (!rtcResponse.ok || !rtmResponse.ok) {
-          throw new Error('Failed to generate renewal tokens');
-        }
-
-        return {
-          rtcToken: rtcData.token,
-          rtmToken: rtmData.token,
-        };
-      } catch (error) {
-        console.error('Error renewing token:', error);
-        throw error;
-      }
+      if (!agoraData) throw new Error('Missing active voice session');
+      const [rtc, rtm] = await Promise.all([
+        fetch(
+          '/api/generate-agora-token?channel=' +
+            encodeURIComponent(agoraData.channel) +
+            '&uid=' +
+            encodeURIComponent(uid),
+        ),
+        fetch(
+          '/api/generate-agora-token?channel=' +
+            encodeURIComponent(agoraData.channel) +
+            '&uid=' +
+            encodeURIComponent(agoraData.uid),
+        ),
+      ]);
+      if (!rtc.ok || !rtm.ok) throw new Error('Could not renew voice session');
+      return {
+        rtcToken: (await rtc.json()).token,
+        rtmToken: (await rtm.json()).token,
+      };
     },
     [agoraData],
   );
 
-  const handleEndConversation = async () => {
-    // Stop the AI agent
-    if (agoraData?.agentId) {
-      try {
-        // console.log('Stopping agent:', agoraData.agentId);
-        const response = await fetch('/api/stop-conversation', {
+  const finishReview = async () => {
+    if (!result || operationPending.current || voiceStartPending.current)
+      return;
+    operationPending.current = true;
+    setEnding(true);
+    setError(null);
+    try {
+      if (showConversation && agoraData?.agentId) {
+        const stopped = await fetch('/api/stop-conversation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ agent_id: agoraData.agentId }),
         });
-        if (!response.ok) {
-          console.error('Failed to stop agent:', await response.text());
-        }
-        // else console.log('Agent stopped successfully');
-      } catch (error) {
-        console.error('Error stopping agent:', error);
+        if (!stopped.ok)
+          throw new Error('Could not end the voice session. Please try again.');
       }
+      const response = await fetch(sessionEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-event-session': result.sessionId,
+        },
+        body: JSON.stringify({ action: 'finish' }),
+      });
+      if (!response.ok)
+        throw new Error(
+          'Could not finish the reminder. Your last result is still available to download. Please try again.',
+        );
+      const data = await response.json();
+      acceptResult(data.result);
+      setSyncError(null);
+      await rtmClient?.logout().catch(() => {});
+      setRtmClient(null);
+      setShowConversation(false);
+    } catch (error) {
+      setError(
+        error instanceof Error &&
+          !(error instanceof TypeError) &&
+          !(error instanceof SyntaxError)
+          ? error.message
+          : 'Could not finish the reminder. Please try again.',
+      );
+    } finally {
+      setEnding(false);
+      operationPending.current = false;
     }
-
-    // Tear down RTM — owned here since we created it here
-    rtmClient?.logout().catch((err) => console.error('RTM logout error:', err));
-    setRtmClient(null);
-    setShowConversation(false);
   };
 
   return (
@@ -226,13 +287,6 @@ export default function LandingPage() {
             />
           ) : agoraData && rtmClient ? (
             <>
-              {/* Non-fatal invite warning: the browser session can still render even if agent start failed. */}
-              {agentJoinError && (
-                <div className="p-3 bg-destructive/10 rounded-md text-destructive text-sm max-w-sm">
-                  Failed to connect with AI agent. The conversation may not work
-                  as expected.
-                </div>
-              )}
               {/* Browser-only conversation mount: RTC provider, error boundary, and lazy-loaded call UI. */}
               <Suspense fallback={<LoadingSkeleton />}>
                 <ErrorBoundary>
@@ -241,7 +295,7 @@ export default function LandingPage() {
                       agoraData={agoraData}
                       rtmClient={rtmClient}
                       onTokenWillExpire={handleTokenWillExpire}
-                      onEndConversation={handleEndConversation}
+                      onEndConversation={finishReview}
                     />
                   </AgoraProvider>
                 </ErrorBoundary>

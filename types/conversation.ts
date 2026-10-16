@@ -8,6 +8,7 @@ export interface AgoraTokenData {
 }
 
 export interface ClientStartRequest {
+  event_session_id: string;
   requester_id: string;
   channel_name: string;
 }
@@ -17,6 +18,7 @@ export interface StopConversationRequest {
 }
 
 export interface AgentResponse {
+  recording_available: boolean;
   agent_id: string;
   create_ts: number;
   state: string;

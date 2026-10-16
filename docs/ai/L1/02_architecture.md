@@ -1,5 +1,9 @@
 # 02 Architecture
 
+## Scenario 04 extension
+
+Immutable event/session fixtures are separate from a per-review participant registration. A random session capability scopes read/update/finish API calls and cloud REST tool headers. Temporary snapshots and request replay results live in one Node process for up to two hours. During voice, LandingPage polls authoritative results and ignores older revisions. It retains the final snapshot for client-side CSV download after the RTC view unmounts. No permanent storage, actual attendance tracking or messaging is implemented. Multiple instances/serverless workers cannot share these sessions.
+
 > Runtime architecture for browser RTC/RTM, Next.js route handlers, and Agora managed agent session.
 
 ## High-Level Shape

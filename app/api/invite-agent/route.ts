@@ -12,6 +12,14 @@ import { ClientStartRequest, AgentResponse } from '@/types/conversation';
 import { DEFAULT_AGENT_UID } from '@/lib/agora';
 import { getScenarioConfig, getScenarioPrompt } from '@/scenarios';
 import { getScenarioTools } from '@/scenarios/tool-contracts';
+import {
+  discussionGreeting,
+  discussionInstructions,
+} from '@/scenarios/04-event-confirmation/config';
+import {
+  getEventSession,
+  EventError,
+} from '@/scenarios/04-event-confirmation/events';
 
 // agentUid identifies the AI in the RTC channel and shares its default with the client.
 const agentUid = String(DEFAULT_AGENT_UID);
@@ -27,7 +35,7 @@ export async function POST(request: NextRequest) {
     // --- 1. Parse request ---
 
     const body: ClientStartRequest = await request.json();
-    const { requester_id, channel_name } = body;
+    const { requester_id, channel_name, event_session_id } = body;
 
     // Validate required env vars on first request so misconfiguration surfaces
     // with a clear error message rather than a silent failure.
@@ -46,7 +54,23 @@ export async function POST(request: NextRequest) {
     // AgoraClient authenticates API calls to the Agora Conversational AI service.
     // area: change to Area.EU or Area.AP for European or Asia-Pacific deployments.
     const scenario = getScenarioConfig();
-    const scenarioTools = getScenarioTools(scenario.id);
+    if (!event_session_id)
+      return NextResponse.json(
+        { error: 'event_session_id is required' },
+        { status: 400 },
+      );
+    const eventResult = getEventSession(event_session_id);
+    if (eventResult.ended)
+      return NextResponse.json({ error: 'session_ended' }, { status: 409 });
+    const scenarioTools = getScenarioTools(
+      scenario.id,
+      undefined,
+      event_session_id,
+    );
+    const recordingAvailable = scenarioTools.length > 0;
+    const greeting = recordingAvailable
+      ? scenario.greeting
+      : discussionGreeting;
     const client = new AgoraClient({
       area: Area.US,
       appId,
@@ -57,8 +81,13 @@ export async function POST(request: NextRequest) {
     // Omit vendor API keys for supported models — AgentKit infers reseller presets on start (see Agora Console / billing).
     const agent = new Agent({
       client,
-      instructions: getScenarioPrompt(scenario.id),
-      greeting: scenario.greeting,
+      instructions:
+        (recordingAvailable
+          ? getScenarioPrompt(scenario.id)
+          : discussionInstructions) +
+        '\n# Current registration at call start\n' +
+        JSON.stringify(eventResult.registration),
+      greeting,
       failureMessage: 'Please wait a moment.',
       maxHistory: 50,
       // VAD controls how the agent detects the start and end of a user's turn.
@@ -110,7 +139,7 @@ export async function POST(request: NextRequest) {
       .withLlm(
         new OpenAI({
           model: 'gpt-4o-mini',
-          greetingMessage: scenario.greeting,
+          greetingMessage: greeting,
           failureMessage: 'Please wait a moment.',
           maxHistory: 15,
           tools: scenarioTools.length > 0 ? scenarioTools : undefined,
@@ -125,7 +154,7 @@ export async function POST(request: NextRequest) {
         //   apiKey: requireEnv('NEXT_LLM_API_KEY'),
         //   url: requireEnv('NEXT_LLM_URL'),
         //   model: 'gpt-4o-mini',
-        //   greetingMessage: scenario.greeting,
+        //   greetingMessage: greeting,
         //   failureMessage: 'Please wait a moment.',
         //   maxHistory: 15,
         //   maxTokens: 1024,
@@ -161,10 +190,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       agent_id: agentId,
+      recording_available: recordingAvailable,
       create_ts: Math.floor(Date.now() / 1000),
       state: 'RUNNING',
     } as AgentResponse);
   } catch (error) {
+    if (error instanceof EventError)
+      return NextResponse.json({ error: error.code }, { status: error.status });
     console.error('Error starting conversation:', error);
     return NextResponse.json(
       {

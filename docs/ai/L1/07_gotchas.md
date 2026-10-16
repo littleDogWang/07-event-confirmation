@@ -1,5 +1,9 @@
 # 07 Gotchas
 
+## Scenario 04 temporary-state limitations
+
+A voice conversation without registration tools is discussion-only: invite succeeds with recording_available=false and the assistant must not claim to save changes. localhost is not a cloud-accessible tool endpoint. Process memory is not shared across multiple workers, instances or serverless functions. Refreshing loses the browser capability and restarting loses server state. Display/download the last confirmed snapshot instead of fabricating recovery. Verbal intent and link clicks do not establish actual attendance.
+
 > High-impact pitfalls that regularly break session startup, transcript rendering, or lifecycle cleanup.
 
 ## Critical Runtime Pitfalls

@@ -1,5 +1,13 @@
 # 06 Interfaces
 
+## Scenario 04 interfaces
+
+POST /api/scenarios/04-event-confirmation/sessions with {action:"create"} returns {result, recordingAvailable} with 201. The result contains sessionId, immutable event/sessions, registration, revision, ended, updatedAt and lastAction. All responses use Cache-Control: no-store.
+
+Send x-event-session on GET sessions/events, POST events and POST sessions with {action:"finish"}. Missing capability is 401; expired/missing state is 404. POST events accepts {action, request_id, new_session_id?, callback_note?}; actions are confirm, cancel, reschedule, undecided, request_recording and request_callback. It returns {result, duplicate}. Conflicts/ended/cancelled/unavailable slots use 409; invalid data uses 400.
+
+POST /api/invite-agent additionally requires event_session_id, a live review. Missing public HTTPS tools still allow discussion-only voice and return recording_available=false; configured tools return true. get_event and update_event bind x-event-session server-side. update_event uses {{tool_call_id}} for request_id. Permanent storage, email delivery, callback scheduling and actual attendance are not represented as completed operations.
+
 > Contracts at repo boundaries: API routes, env vars, runtime events, and shared TypeScript payloads.
 
 ## HTTP Route Contracts

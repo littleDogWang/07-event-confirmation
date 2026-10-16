@@ -1,5 +1,9 @@
 # 08 Security
 
+## Scenario 04 session scope
+
+The random review capability in x-event-session grants access only to temporary example data; never log it or expose it in model-selectable parameters. Cloud tool headers are bound on the server. No list-all-sessions endpoint exists. All responses are no-store. Request replay is scoped per review; conflicting reuse is rejected. CSV escapes quotes and neutralizes formula prefixes in user-entered notes. These public example APIs are not authenticated production registration APIs.
+
 > Security model, trust boundaries, secret handling, and safety controls for this quickstart.
 
 ## Trust Boundaries

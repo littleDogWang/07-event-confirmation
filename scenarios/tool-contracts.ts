@@ -1,14 +1,92 @@
 import type { LlmTool } from 'agora-agents';
-type Property = Record<string, unknown>;
-function tool(baseUrl: string, name: string, description: string, method: 'GET' | 'POST', path: string, properties: Property, required: string[], body?: Record<string, unknown>): LlmTool {
-  return { type: 'function', function: { name, description, parameters: { type: 'object', properties, required } }, server: { method, url: `${baseUrl.replace(/\/$/, '')}${path}`, ...(body ? { body } : {}) } };
+
+export function getToolBaseUrl(
+  value = process.env.TOP_TEN_SCENARIO_TOOL_BASE_URL,
+): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (
+      url.protocol !== 'https:' ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash ||
+      ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+    )
+      return null;
+    return value.replace(/\/$/, '');
+  } catch {
+    return null;
+  }
 }
-export function getScenarioTools(_scenarioId: string, baseUrl = process.env.TOP_TEN_SCENARIO_TOOL_BASE_URL): LlmTool[] {
-  if (!baseUrl) return [];
-  const stringProperty = { type: 'string' };
-  const integerProperty = { type: 'integer' };
+
+export function getScenarioTools(
+  _scenarioId: string,
+  baseUrl = process.env.TOP_TEN_SCENARIO_TOOL_BASE_URL,
+  sessionId?: string,
+): LlmTool[] {
+  const origin = getToolBaseUrl(baseUrl);
+  if (!origin || !sessionId) return [];
+  const server = {
+    url: origin + '/api/scenarios/04-event-confirmation/events',
+    headers: { 'x-event-session': sessionId },
+  };
   return [
-        tool(baseUrl, 'get_event', 'Read the configured event record.', 'GET', '/api/scenarios/04-event-confirmation/events?event_id={{args.event_id}}', { event_id: stringProperty }, ['event_id']),
-        tool(baseUrl, 'update_event', 'Confirm, cancel, or request a supported event reschedule.', 'POST', '/api/scenarios/04-event-confirmation/events', { event_id: stringProperty, action: { type: 'string', enum: ['confirm', 'cancel', 'reschedule'] }, request_id: stringProperty, new_time: stringProperty }, ['event_id', 'action', 'request_id'], { event_id: '{{args.event_id}}', action: '{{args.action}}', request_id: '{{args.request_id}}', new_time: '{{args.new_time}}' }),
-      ];
+    {
+      type: 'function',
+      function: {
+        name: 'get_event',
+        description:
+          'Read the current participant registration, event information and available sessions. Use this before discussing or changing the response.',
+        parameters: { type: 'object', properties: {}, required: [] },
+      },
+      server: { ...server, method: 'GET' },
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'update_event',
+        description:
+          'Update only this participant registration. Confirm cancellation or switching sessions with the user first. Recording and callback actions record preferences only; they do not send or schedule anything. Use an empty string for new_session_id unless rescheduling, and for callback_note unless requesting later contact.',
+        parameters: {
+          type: 'object',
+          properties: {
+            action: {
+              type: 'string',
+              enum: [
+                'confirm',
+                'cancel',
+                'reschedule',
+                'undecided',
+                'request_recording',
+                'request_callback',
+              ],
+            },
+            new_session_id: {
+              type: 'string',
+              description:
+                'Available event session ID, or empty unless rescheduling.',
+            },
+            callback_note: {
+              type: 'string',
+              description:
+                'When the participant would prefer contact, or empty. Maximum 500 characters.',
+            },
+          },
+          required: ['action', 'new_session_id', 'callback_note'],
+        },
+      },
+      server: {
+        ...server,
+        method: 'POST',
+        body: {
+          action: '{{args.action}}',
+          request_id: '{{tool_call_id}}',
+          new_session_id: '{{args.new_session_id}}',
+          callback_note: '{{args.callback_note}}',
+        },
+      },
+    },
+  ];
 }
