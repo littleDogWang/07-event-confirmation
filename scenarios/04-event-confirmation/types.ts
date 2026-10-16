@@ -58,13 +58,14 @@ export function responseLabel(result: EventSnapshot) {
 
 export function formatEventTime(startsAt: string) {
   return (
-    new Intl.DateTimeFormat('en', {
+    new Intl.DateTimeFormat('en-US', {
       timeZone: eventFixture.timeZone,
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-    }).format(new Date(startsAt)) + ' · UTC+8'
+      timeZoneName: 'short',
+    }).format(new Date(startsAt))
   );
 }

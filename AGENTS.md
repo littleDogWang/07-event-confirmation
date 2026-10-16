@@ -15,6 +15,10 @@ At the user's request, scenarios 03 and 04 use the official quickstart starter U
 
 The shared specification lives at `scenario-repos/SCENARIO_UI_RULES.md` in the workspace (`../SCENARIO_UI_RULES.md` relative to this file). This exception is self-contained for independent clones.
 
+## U.S. scenario content
+
+Use a United States setting for fictional business examples, UI copy, Agent context and sample data. Use U.S. cities and addresses, American English (`en-US`), USD for configured prices, and U.S. local dates and times. Use an explicit IANA time zone and the date-correct UTC offset, including daylight saving time; keep data, prompts, tools, exports and UI labels consistent. Do not introduce East Asian locations, regional currencies or time zones into scenario examples. Keep fictional data clearly distinguished from live business facts. Preserve original source citations and third-party license attribution accurately.
+
 ## Repository language
 
 Use English for repository content, including documentation, code comments, UI copy and examples. Keep future additions and edits free of Chinese text.

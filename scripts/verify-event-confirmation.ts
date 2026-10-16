@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { Agent } from 'agora-agents';
-import { responseLabel } from '../scenarios/04-event-confirmation/types';
+import { formatEventTime, responseLabel } from '../scenarios/04-event-confirmation/types';
+
+assert.match(formatEventTime('2026-10-20T09:00:00-04:00'), /9:00 AM EDT/);
+assert.match(formatEventTime('2026-12-20T09:00:00-05:00'), /9:00 AM EST/);
 import { NextRequest } from 'next/server';
 import {
   createEventSession,
