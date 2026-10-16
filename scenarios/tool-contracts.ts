@@ -1,21 +1,15 @@
 import type { LlmTool } from 'agora-agents';
 
-export function getToolBaseUrl(
-  value = process.env.TOP_TEN_SCENARIO_TOOL_BASE_URL,
-): string | null {
+export function getToolBaseUrl(value = process.env.TOP_TEN_SCENARIO_TOOL_BASE_URL): string | null {
   if (!value) return null;
   try {
     const url = new URL(value);
-    if (
-      url.protocol !== 'https:' ||
-      url.username ||
-      url.password ||
-      url.search ||
-      url.hash ||
-      ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
-    )
-      return null;
-    return value.replace(/\/$/, '');
+    const host = url.hostname.toLowerCase().replace(/\.$/, '');
+    const localHost = (!host.includes('.') && !host.startsWith('[')) || /(^|\.)(localhost|local|internal)$/.test(host) ||
+      /^(0\.|10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(host) ||
+      /^(\[::|\[f[cd]|\[fe[89ab])/.test(host);
+    if (url.protocol !== 'https:' || localHost || url.username || url.password || url.search || url.hash) return null;
+    return url.toString().replace(/\/$/, '');
   } catch {
     return null;
   }

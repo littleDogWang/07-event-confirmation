@@ -110,8 +110,8 @@ export async function POST(request: NextRequest) {
         },
       },
       // RTM is required for transcript events in the browser client.
-      // enable_tools is required for MCP tool invocation.
-      advancedFeatures: { enable_rtm: true, enable_tools: true },
+      // Enable execution only when this session has configured REST tools.
+      advancedFeatures: { enable_rtm: true, enable_tools: scenarioTools.length > 0 },
       // Required for browser RTM events:
       // - data_channel: 'rtm' enables RTM delivery path for state/metrics/errors
       // - enable_error_message emits AGENT_ERROR payloads
