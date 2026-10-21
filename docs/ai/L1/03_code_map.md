@@ -8,7 +8,7 @@
 - scenarios/04-event-confirmation/http.ts and app/api/scenarios/04-event-confirmation/: capability-scoped session/result APIs.
 - scenarios/tool-contracts.ts: public HTTPS REST tools bound to the current review.
 - components/EventResultCard.tsx: authoritative voice-tool results and CSV download; LandingPage starts voice directly.
-- components/QuickstartTranscriptPanel.tsx and QuickstartConversationLayout.tsx: starter transcript and layout; tailwind.config.ts: Tailwind 3 scanning.
+- components/QuickstartTranscriptPanel.tsx and QuickstartConversationLayout.tsx: adopted transcript and layout; app/globals.css: Tailwind 4 scanning.
 - scripts/verify-event-confirmation.ts: domain/API/export regression checks.
 
 > Directory-level ownership map and where to change behavior safely.
@@ -51,7 +51,7 @@ types/               Shared TypeScript route/component contracts
 
 - `scripts/verify-api-contracts.ts`: imports route handlers and validates contract behavior.
 - `scripts/doctor.mjs`: local setup checks consumed by `pnpm run doctor`.
-- `tailwind.config.ts`: includes `agora-agent-uikit` dist classes in content scan.
+- `app/globals.css`: Tailwind 4 @source includes the installed UIKit classes.
 
 ## Fast File Lookup
 
@@ -78,7 +78,7 @@ types/               Shared TypeScript route/component contracts
 
 - `public/*`: icons, logos, and heading SVG assets used in pre-call/in-call experience.
 - `app/globals.css` and `styles/globals.css`: baseline theme/layout styles.
-- `tailwind.config.ts`: utility class scan and theme extension.
+- `app/globals.css`: Tailwind 4 CSS source scanning and semantic theme roles.
 
 ## Verification Path Mapping
 
@@ -98,3 +98,7 @@ types/               Shared TypeScript route/component contracts
 - [conversation_lifecycle.md](L2/conversation_lifecycle.md) — Cross-file call path during start/stop.
 - [from_scratch_bootstrap.md](L2/from_scratch_bootstrap.md) — Official baseline map for recreating the quickstart recipe.
 - [transcript_pipeline.md](L2/transcript_pipeline.md) — Mapping and rendering flow from toolkit events.
+
+## Scenario 01 UI alignment (2026-10-21)
+
+`ScenarioShell` and `useScenarioUi` compose the entry, persistent identity, activity workspace, Inspector and Build panels around existing session bootstrap. `scenarios/presentation.ts` loads scenario-specific content. `ConversationComponent` reports actual activity/inspection events and uses the adopted transcript and Glass controls. Business views remain scenario-owned below the voice workspace. Tailwind 4/PostCSS, theme recipes and MiSans match scenario 01. `scenarios/runtime-profile.ts` displays the non-secret configured pipeline; keep it aligned with the invite route. Never treat browser fixtures as live RTC/tool acceptance.

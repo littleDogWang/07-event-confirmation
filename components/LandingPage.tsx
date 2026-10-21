@@ -2,7 +2,7 @@
 
 import { useState, useRef, Suspense, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { CalendarCheck2, CalendarDays } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import { EventResultCard } from './EventResultCard';
 import {
   formatEventTime,
@@ -17,7 +17,7 @@ import type {
 } from '../types/conversation';
 import { ErrorBoundary } from './ErrorBoundary';
 import { LoadingSkeleton } from './LoadingSkeleton';
-import { QuickstartPreCallCard } from './QuickstartPreCallCard';
+import { ScenarioShell, useScenarioUi } from './ScenarioShell';
 
 // Dynamically import the ConversationComponent with ssr disabled
 const ConversationComponent = dynamic(() => import('./ConversationComponent'), {
@@ -64,6 +64,7 @@ const sessionEndpoint = '/api/scenarios/04-event-confirmation/sessions';
 export default function LandingPage() {
   const [result, setResult] = useState<EventSnapshot | null>(null);
   const [showConversation, setShowConversation] = useState(false);
+  const ui = useScenarioUi();
   const [recordingAvailable, setRecordingAvailable] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [ending, setEnding] = useState(false);
@@ -127,6 +128,7 @@ export default function LandingPage() {
       return;
     voiceStartPending.current = true;
     setIsLoading(true);
+    ui.start();
     setError(null);
     let startedAgent: AgentResponse | null = null;
     let startedRtm: RTMClient | null = null;
@@ -170,7 +172,7 @@ export default function LandingPage() {
       setResult(nextResult);
       setRecordingAvailable(startedAgent!.recording_available === true);
       setSyncError(null);
-      setAgoraData({ ...tokenData, agentId: startedAgent!.agent_id });
+      setAgoraData({ ...tokenData, agentId: startedAgent!.agent_id, startedAt: Date.now() });
       setRtmClient(startedRtm);
       setShowConversation(true);
     } catch (error) {
@@ -254,6 +256,7 @@ export default function LandingPage() {
       await rtmClient?.logout().catch(() => {});
       setRtmClient(null);
       setShowConversation(false);
+      ui.end();
     } catch (error) {
       setError(
         error instanceof Error &&
@@ -272,99 +275,16 @@ export default function LandingPage() {
     (item) => item.sessionId === result.registration.sessionId,
   );
   return (
-    <div className="event-shell">
-      <header className="event-header">
-        <div className="event-brand">
-          <div className="event-mark">
-            <CalendarCheck2 />
-          </div>
-          <div>
-            <div className="event-title-row">
-              <h1>Event Reminder Assistant</h1>
-              <span className="event-scenario">04</span>
-            </div>
-            <p>Talk through your plans with Riley.</p>
-          </div>
-        </div>
-        <span className="event-powered">
-          Powered by{' '}
-          <a
-            href="https://agora.io/en/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Agora
-          </a>
-        </span>
-      </header>
-      <main className={'event-main ' + (!showConversation ? 'event-idle' : '')}>
-        {!showConversation ? (
-          <QuickstartPreCallCard
-            isLoading={isLoading}
-            error={error}
-            ended={!!result?.ended}
-            onStartConversation={handleStartConversation}
-          />
-        ) : agoraData && rtmClient ? (
-          <>
-            <div className="event-call-heading">
-              <span className="event-eyebrow">VOICE EVENT REMINDER</span>
-              <h2>Let’s confirm your plans.</h2>
-            </div>
-            <details className="event-context">
-              <summary>
-                <CalendarDays />
-                <span>{result!.event.title}</span>
-                <span className="event-context-time">
-                  {formatEventTime(slot!.startsAt)}
-                </span>
-              </summary>
-              <div>
-                <p>{result!.event.description}</p>
-                <p>
-                  {result!.event.location} · {slot!.durationMinutes} minutes ·{' '}
-                  {result!.registration.participantName}
-                </p>
-                <p>{result!.event.joiningInstructions}</p>
-                <p>{result!.event.recordingInfo}</p>
-              </div>
-            </details>
-            {!recordingAvailable && (
-              <p className="event-recording-notice" role="status">
-                You can discuss the event with Riley. Registration changes
-                cannot be recorded in this session.
-              </p>
-            )}
-            {error && (
-              <p className="event-error" role="alert">
-                {error}
-              </p>
-            )}
-            <Suspense fallback={<LoadingSkeleton />}>
-              <ErrorBoundary>
-                <AgoraProvider>
-                  <ConversationComponent
-                    agoraData={agoraData}
-                    rtmClient={rtmClient}
-                    onTokenWillExpire={handleTokenWillExpire}
-                    onEndConversation={finishReview}
-                    ending={ending}
-                  />
-                </AgoraProvider>
-              </ErrorBoundary>
-            </Suspense>
-          </>
-        ) : null}
-        {result && (
-          <div className="event-result-host">
-            <EventResultCard result={result} syncError={syncError} />
-          </div>
-        )}
-      </main>
-      <footer className="event-footer">
-        Event reminder & confirmation
-        <span>Temporary responses · Download to keep a copy</span>
-      </footer>
-    </div>
+    <ScenarioShell ui={ui} active={showConversation} loading={isLoading} error={error} disabled={false} onStart={handleStartConversation}
+      business={<>{result && <EventResultCard result={result} syncError={syncError} />}</>}>
+      {result && <details className="event-context"><summary><CalendarDays /><span>{result.event.title}</span><span className="event-context-time">{formatEventTime(slot!.startsAt)}</span></summary><div><p>{result.event.description}</p><p>{result.event.location} · {slot!.durationMinutes} minutes · {result.registration.participantName}</p><p>{result.event.joiningInstructions}</p><p>{result.event.recordingInfo}</p></div></details>}
+          {!recordingAvailable && <p className="event-recording-notice" role="status">You can discuss the event with Riley. Registration changes cannot be recorded in this session.</p>}
+      {error && <p className="demo-workspace-fallback" role="alert">{error}</p>}
+      {showConversation && agoraData && rtmClient && <Suspense fallback={<LoadingSkeleton />}><ErrorBoundary><AgoraProvider>
+        <ConversationComponent agoraData={agoraData} rtmClient={rtmClient} onTokenWillExpire={handleTokenWillExpire} onEndConversation={finishReview}
+          onActivityChange={ui.setActivity} onInspectionChange={ui.setInspection} ending={ending}
+           />
+      </AgoraProvider></ErrorBoundary></Suspense>}
+    </ScenarioShell>
   );
 }

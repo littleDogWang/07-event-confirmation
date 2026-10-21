@@ -2,7 +2,7 @@
 
 ## Scenario 04 UI and state rules
 
-Use the restored starter UI and Tailwind 3 config. Semantic tokens are HSL channels, used with hsl(var(--token)). Agent-ui adoption is paused for scenario 04. Keep changes scoped to the session-bound participant and render only authoritative API results. Ended results stay in browser memory; new reviews use fresh fixtures. All repository additions are English.
+Use the adopted scenario-01 UI and Tailwind 4 CSS theme. Semantic tokens are complete colors, used with var(--token). Scenario-01 agent-ui components are adopted for scenario 04. Keep changes scoped to the session-bound participant and render only authoritative API results. Ended results stay in browser memory; new reviews use fresh fixtures. All repository additions are English.
 
 > Implementation conventions that protect lifecycle correctness, transcript accuracy, and docs/code alignment.
 
@@ -39,7 +39,7 @@ Use the restored starter UI and Tailwind 3 config. Semantic tokens are HSL chann
 
 ## Styling and UI Kit Rules
 
-- Tailwind config must scan `./node_modules/agora-agent-uikit/dist/**/*.{js,mjs}`.
+- Tailwind 4 scans UIKit with @source in app/globals.css.
 - Prefer existing quickstart layout components over introducing parallel shells.
 
 ## Documentation Synchronization
@@ -88,3 +88,7 @@ When changing workflow/contracts/ownership in `components` or `app/api`, update:
 
 - [conversation_lifecycle.md](L2/conversation_lifecycle.md) — Why StrictMode guard and hook ownership are required.
 - [transcript_pipeline.md](L2/transcript_pipeline.md) — UID remapping and turn-status handling rationale.
+
+## Scenario 01 UI alignment (2026-10-21)
+
+`ScenarioShell` and `useScenarioUi` compose the entry, persistent identity, activity workspace, Inspector and Build panels around existing session bootstrap. `scenarios/presentation.ts` loads scenario-specific content. `ConversationComponent` reports actual activity/inspection events and uses the adopted transcript and Glass controls. Business views remain scenario-owned below the voice workspace. Tailwind 4/PostCSS, theme recipes and MiSans match scenario 01. `scenarios/runtime-profile.ts` displays the non-secret configured pipeline; keep it aligned with the invite route. Never treat browser fixtures as live RTC/tool acceptance.

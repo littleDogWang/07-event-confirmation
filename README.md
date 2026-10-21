@@ -15,13 +15,13 @@ Review a participant’s webinar registration, record their response, and downlo
 
 **Boundaries:** the event and participant are fixed examples. Changes affect this experience only. Recording/callback preferences do not send messages or schedule calls. Confirmed intent is separate from actual attendance, which is not tracked.
 
-**UI:** restored official starter entry, transcript, layout and agora-agent-uikit visualizer/microphone controls. Agent-ui adoption is paused for scenario 04; scenario 01 is unchanged. The temporary response card and CSV export remain available.
+**UI:** adopted scenario-01 entry, theme, transcript, activity and Glass voice controls. The temporary response card and CSV export remain available.
 
 **Checks:** `pnpm run verify:scenario` covers registration behavior, isolation, idempotency, expiry, discussion-only startup and CSV. `pnpm run verify` includes the full verification chain.
 
 ## Quickstart foundation
 
-The following documentation describes the underlying Agora Next.js starter. Scenario 04 uses its starter UI with scenario-specific copy and the business workflow above.
+The following documentation describes the underlying Agora Next.js starter. Scenario 04 uses its scenario-01 UI with scenario-specific copy and the business workflow above.
 
 [![Build](https://github.com/AgoraIO-Conversational-AI/agent-quickstart-nextjs/actions/workflows/build-check.yml/badge.svg)](https://github.com/AgoraIO-Conversational-AI/agent-quickstart-nextjs/actions/workflows/build-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
@@ -234,3 +234,7 @@ TOP_TEN_SCENARIO_TOOL_BASE_URL is optional. Only an explicitly configured public
 ## U.S. example data
 
 The fictional U.S. webinar uses `America/New_York`. October sessions use EDT (`-04:00`); UI labels and CSV use the configured event time zone.
+
+## Interface
+
+The interface follows scenario 01: task-specific entry and welcome, persistent scenario identity, activity canvas, transcript and Glass voice controls. Inspector shows actual session evidence; Build provides this repository’s setup commands. Business results retain their original contracts and appear below the voice workspace. Edit `scenarios/04-event-confirmation/presentation.ts` for scenario copy. Styling uses Tailwind 4/PostCSS and the vendored theme; see `styles/agent-ui/PROVENANCE.md`. Local checks and browser rendering do not establish live voice/cloud-tool acceptance.
