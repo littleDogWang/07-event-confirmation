@@ -1,112 +1,48 @@
 # 01 Setup
 
-## Scenario 04 setup
+> Setup and verification for Event Reminder & Confirmation.
 
-Run one long-lived Node process. Voice, result display and CSV need no external business service or database. Registration updates additionally need TOP_TEN_SCENARIO_TOOL_BASE_URL pointing to this SAME app over public HTTPS. Without it, voice is discussion-only and cannot record registration changes. No tunnel/deployment is automatically provisioned. Start event reminder begins voice directly. Run pnpm run verify:scenario as well as the full verify chain.
+## Prerequisites
 
-> Environment setup, commands, and safe verification flow for this quickstart.
+Node.js 22+, pnpm 9.15.9 and repository access. A running Docker engine is needed for container checks. Live speech requires an Agora project with RTC, Signaling and Conversational AI, internet access and microphone permission. Agora CLI is optional for manual setup; use its readiness probe before binding.
 
-## Runtime Requirements
+## Environment
 
-- Node.js `>=22` (`package.json` engines field).
-- `pnpm` package manager.
-- Agora CLI (`agora`) for project binding and environment bootstrap.
-- Agora project with Conversational AI enabled.
+The tracked schema is `env.local.example`; the local file is `.env.local`. Keep existing credentials when reusing a clone. Docker's public App ID is a build argument and must match the runtime App ID; its certificate is runtime-only.
 
-Install the Agora CLI from the root `README.md` instructions. On Windows, use the PowerShell installer first; if it fails, run the shell installer from Git Bash and then verify with `agora --help`.
+| Variable | Required | Owner / exposure | Purpose |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_AGORA_APP_ID` | Required | Next.js build and runtime; public | App ID from the selected Agora project; Docker must receive the same value at build and runtime. |
+| `NEXT_AGORA_APP_CERTIFICATE` | Required | Next.js server runtime; secret | Signs RTC/RTM credentials and authenticates managed Agent operations; never a build argument. |
+| `TOP_TEN_SCENARIO_TOOL_BASE_URL` | Optional | Next.js server; non-secret | This same app's public HTTPS origin. Omit for default conversation; enabling tools requires actual cloud reachability. |
 
-## Install and Bootstrap
-
-1. Install dependencies.
-2. Bind an Agora project.
-3. Write `.env.local`.
-4. Verify setup before running.
+## Setup
 
 ```bash
-pnpm install
-agora login
-agora project use <your-project>
-agora project env write .env.local
-agora project doctor --deep
+git clone https://github.com/littleDogWang/04-event-confirmation.git
+cd 04-event-confirmation
+pnpm install --frozen-lockfile
+cp env.local.example .env.local
 ```
 
-## Required Environment Variables
+Fill the two required Agora values in `.env.local`, then run `pnpm run doctor` and `pnpm run dev`. Keep an existing env file instead of overwriting it. With a ready Agora CLI, use `agora quickstart env write . --template nextjs --project <your-project> --json` to write template-aware keys for an existing authorized project. Check `agora version` and `agora doctor --json` first; do not create or change a remote project without authorization.
 
-- `NEXT_PUBLIC_AGORA_APP_ID`: Agora project App ID.
-- `NEXT_AGORA_APP_CERTIFICATE`: Agora App Certificate (server only).
+## Development
 
-The base `.env.local` contract contains only these Agora credentials. Agent behavior defaults live in code, and optional BYOK examples are documented later in the root README.
+Run `pnpm run dev` and open http://localhost:3000. Use the scenario-specific entry and persistent identity; starting voice requires a user action.
 
-## Primary Commands
+Default mode needs no business callback URL. The assistant discusses the event and attendance intent but cannot record registration changes. An unmodified result remains 'No response recorded'.
 
-```bash
-pnpm run dev
-pnpm run lint
-pnpm run typecheck
-pnpm run verify:api
-pnpm run build
-pnpm run verify
-```
+## Verification
+
+Run `pnpm run verify` for pnpm run doctor && pnpm run verify:template && pnpm run lint && pnpm run typecheck && pnpm run verify:api && pnpm run verify:scenario && pnpm run build. Run `pnpm run verify:docker` separately for image build, non-root startup and a synthetic scenario route. Follow [README deployment](../../../README.md#deployment) for native/Docker commands.
 
 ## Verification Safety
 
-Safe without live session:
-
-- `pnpm run lint`
-- `pnpm run typecheck`
-- `pnpm run verify:api`
-- `pnpm run build`
-
-Requires env/project binding:
-
-- `pnpm run doctor`
-- `pnpm run verify`
-
-## Local Run Notes
-
-- App + API routes run at `http://localhost:3000`.
-- Start event reminder creates temporary state and starts the token + RTM + invite flow directly.
-- If transcript or agent join fails, first run `agora project doctor --deep`.
-
-## CI Expectations
-
-- Build workflow badge exists in root `README.md`.
-- Pre-ship expectation: `pnpm run verify` passes.
-- Route contract tests are executed by `scripts/verify-api-contracts.ts`.
-
-## Troubleshooting Matrix
-
-| Symptom | Probable Cause | First Check | Fix Path |
-| --- | --- | --- | --- |
-| Agent never joins | Invite route or env mismatch | `pnpm run doctor` and invite route logs | Verify the shared agent UID and invite payload |
-| Transcript missing | RTM token capability missing | Token route implementation | Ensure `buildTokenWithRtm` remains unchanged |
-| `verify` fails at doctor | Project not bound | `agora project use` output | Re-bind project and rewrite `.env.local` |
-| Mic publishes but no agent response | Agent start failed | UI warning (`agentJoinError`) | Inspect `/api/invite-agent` response |
-
-## Local-Only vs Deploy-Specific
-
-Local:
-
-- Uses `.env.local` created by `agora project env write`.
-- Uses `next dev --webpack`.
-- Best for flow debugging and transcript behavior checks.
-
-Vercel:
-
-- Requires environment vars configured per environment scope.
-- Keep `NEXT_AGORA_APP_CERTIFICATE` private server variable.
-- Use `pnpm run build` locally before pushing deployment changes.
-
-## Setup Change Checklist
-
-When setup docs/config change:
-
-1. Update `README.md` environment/commands sections.
-2. Update `env.local.example` if variable set changes.
-3. Update `docs/ai/L1/01_setup.md` and `L0_repo_card.md` `Last Reviewed`.
-4. Run at least `pnpm run typecheck` and `pnpm run verify:api`.
+Template, lint, type, mocked API and scenario checks do not prove live speech. Doctor/full verify needs a populated local env file; CI uses synthetic values. Docker tests use synthetic credentials and do not start an Agora Agent. Cloud callback reachability and a complete spoken business flow require separate real acceptance.
 
 ## Related Deep Dives
 
-- [conversation_lifecycle.md](L2/conversation_lifecycle.md) — Full start/join/teardown sequence.
-- [transcript_pipeline.md](L2/transcript_pipeline.md) — RTM transcript/event pipeline internals.
+- [Lifecycle](L2/conversation_lifecycle.md)
+- [Tokens](L2/token_model.md)
+- [Agent configuration](L2/invite_agent_config.md)

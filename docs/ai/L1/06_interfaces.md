@@ -1,120 +1,46 @@
 # 06 Interfaces
 
-## Scenario 04 interfaces
+> Actual scenario API, event and configuration boundaries.
 
-POST /api/scenarios/04-event-confirmation/sessions with {action:"create"} returns {result, recordingAvailable} with 201. The result contains sessionId, immutable event/sessions, registration, revision, ended, updatedAt and lastAction. All responses use Cache-Control: no-store.
+## Browser Or User-Facing APIs
 
-Send x-event-session on GET sessions/events, POST events and POST sessions with {action:"finish"}. Missing capability is 401; expired/missing state is 404. POST events accepts {action, request_id, new_session_id?, callback_note?}; actions are confirm, cancel, reschedule, undecided, request_recording and request_callback. It returns {result, duplicate}. Conflicts/ended/cancelled/unavailable slots use 409; invalid data uses 400.
+- `GET /api/generate-agora-token`: optional uid/channel; returns `{ token, uid, channel }`; server credential/configuration errors return failure.
+- `POST /api/invite-agent`: requester/channel are required. The invite additionally requires `event_session_id`, created by the scenario session API. Keep the server-bound capability header and tool-call replay handling. Returns Agent ID, creation time and state; input and runtime failures are reported explicitly.
+- `POST /api/stop-conversation`: requires agent_id; already-stopping/not-found handling is idempotent.
+- `POST /api/chat/completions`: optional custom-LLM proxy, not used by the default managed pipeline.
 
-POST /api/invite-agent additionally requires event_session_id, a live review. Missing public HTTPS tools still allow discussion-only voice and return recording_available=false; configured tools return true. get_event and update_event bind x-event-session server-side. update_event uses {{tool_call_id}} for request_id. Permanent storage, email delivery, callback scheduling and actual attendance are not represented as completed operations.
+`get_event` and `update_event` use the server-bound `x-event-session` capability. Updates support confirm, cancel, reschedule, undecided, request_recording and request_callback. Tool-call IDs supply request replay protection. The browser polls current results and keeps the final snapshot for export.
 
-> Contracts at repo boundaries: API routes, env vars, runtime events, and shared TypeScript payloads.
+The assistant discusses the event and attendance intent but cannot record registration changes. An unmodified result remains 'No response recorded'.
 
-## HTTP Route Contracts
+`get_event` and `update_event` read or update the current temporary review. The server binds its capability in the tool header; the model cannot choose another participant's session.
 
-### `GET /api/generate-agora-token`
+Use the scenario-specific entry and persistent identity; starting voice requires a user action.
 
-Query params:
 
-- `uid` optional; invalid/zero resolves to random RTM-safe UID.
-- `channel` optional; defaults to generated `ai-conversation-<ts>-<rand>`.
 
-Success response:
+See [scenario guide](../../../scenarios/04-event-confirmation/README.md) and the scenario source for exact business request shapes, validation errors and ownership rules.
 
-```json
-{ "token": "...", "uid": "1234", "channel": "ai-conversation-..." }
-```
+## Events And Media
 
-Failure response: `{ "error": string, "details"?: string }` with `500`.
-
-### `POST /api/invite-agent`
-
-Body (`ClientStartRequest`):
-
-```json
-{ "requester_id": "1234", "channel_name": "ai-conversation-..." }
-```
-
-Success (`AgentResponse`):
-
-```json
-{ "agent_id": "...", "create_ts": 1710000000, "state": "RUNNING" }
-```
-
-Validation failures return `400`; server failures return `500`.
-
-### `POST /api/stop-conversation`
-
-Body (`StopConversationRequest`): `{ "agent_id": "..." }`.
-
-Responses:
-
-- `{ "success": true }`
-- `{ "success": true, "state": "already-stopping" }` for idempotent stop state
-- `{ "error": string }` on failure
-
-### `POST /api/chat/completions`
-
-Optional SSE proxy path (not default runtime path). Requires `NEXT_LLM_API_KEY` and `NEXT_LLM_URL` when used.
-
-## Event/Data Interfaces
-
-- RTM transcript/state/metrics/errors consumed through `AgoraVoiceAI` event emitter.
-- Raw RTM `message` event parsed as fallback for `message.error` and `message.sal_status` payloads.
-- `AGENT_METRICS` payloads displayed by `QuickstartPipelineMetrics`.
+RTC carries microphone and synthesized audio. RTM/toolkit provides TRANSCRIPT_UPDATED, AGENT_STATE_CHANGED, AGENT_METRICS, completed-turn, error and SAL events where reported. Normalize toolkit local uid zero before display and retain interrupted turns. Preserve missing metric fields and data provenance; Inspector outcomes are manually confirmed.
 
 ## Environment Contract
 
-Required:
+Local Next.js reads `.env.local` from tracked `env.local.example`. Hosted/Docker servers inject runtime values; the public App ID must also be supplied to the browser build.
 
-- `NEXT_PUBLIC_AGORA_APP_ID`
-- `NEXT_AGORA_APP_CERTIFICATE`
+| Variable | Required | Owner / exposure | Purpose |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_AGORA_APP_ID` | Required | Next.js build and runtime; public | App ID from the selected Agora project; Docker must receive the same value at build and runtime. |
+| `NEXT_AGORA_APP_CERTIFICATE` | Required | Next.js server runtime; secret | Signs RTC/RTM credentials and authenticates managed Agent operations; never a build argument. |
+| `TOP_TEN_SCENARIO_TOOL_BASE_URL` | Optional | Next.js server; non-secret | This same app's public HTTPS origin. Omit for default conversation; enabling tools requires actual cloud reachability. |
 
-This is the complete base `.env.local` contract. The optional BYOK route and provider snippets use additional variables only when a developer explicitly enables them.
+## External Services
 
-## Test Coverage for Interfaces
-
-- `scripts/verify-api-contracts.ts` asserts token generation, input validation, env failures, and SSE framing cases.
-
-## Shared Client-Side Interfaces
-
-From `types/conversation.ts` (high-use):
-
-- `AgoraTokenData`: token bootstrap payload consumed by `LandingPage`.
-- `AgoraRenewalTokens`: renewal callback result (`rtcToken`, `rtmToken`).
-- `ConversationComponentProps`: runtime dependencies for in-call component.
-
-## Interface Invariants
-
-- Token payload must always include `token`, `uid`, `channel`.
-- Invite route requires both `requester_id` and `channel_name`.
-- Stop route requires `agent_id`; missing should never be tolerated silently.
-- Token route should always return UID as string for downstream compatibility.
-
-## Event Interface Notes
-
-- Metrics stream entries are append-only in component state, capped to recent window.
-- Connection issue records carry `source`, `agentUserId`, code/message, timestamp.
-- SAL and signaling fallback payloads are parsed defensively because message schema can vary.
-
-## Backward Compatibility Guidance
-
-- If route response shape changes, update both client consumers and contract tests in same change.
-- If adding fields, keep existing fields stable to avoid quickstart consumer breakage.
-- Reflect interface changes in README and L1 docs to keep sample copyable.
+The server uses agora-agents with the configured managed STT/LLM/TTS providers. The browser uses RTC, Signaling and the Agent Client Toolkit. Optional business tools call this same app over public HTTPS, and their returned success is required before reporting an action complete. Provider BYOK blocks are opt-in, server-only and require separate verification.
 
 ## Related Deep Dives
 
-- [conversation_lifecycle.md](L2/conversation_lifecycle.md) — How route contracts are used in sequence.
-- [transcript_pipeline.md](L2/transcript_pipeline.md) — Event-level contract mapping.
-
-
-## Local conversation and optional tools
-
-Default conversations retain the existing event/participant fixture and discussion-only registration prompt. Attendance intent, session preferences and follow-up interest can be discussed but not recorded. A configured public HTTPS tool origin enables the existing session-bound registration tools.
-
-TOP_TEN_SCENARIO_TOOL_BASE_URL is optional. Only an explicitly configured public HTTPS endpoint enables tools; malformed, HTTP, localhost and local/private origins leave tools disabled. URL validation does not prove network reachability. No tunnel, knowledge base or database is needed for the default conversation. Local checks do not establish live speech or cloud callback acceptance.
-
-## U.S. example data
-
-The fictional U.S. webinar uses `America/New_York`. October sessions use EDT (`-04:00`); UI labels and CSV use the configured event time zone.
+- [Tokens](L2/token_model.md)
+- [Transcript pipeline](L2/transcript_pipeline.md)
+- [Agent configuration](L2/invite_agent_config.md)

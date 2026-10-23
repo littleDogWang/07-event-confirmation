@@ -1,111 +1,30 @@
 # 02 Architecture
 
-## Scenario 04 extension
+> Topology and state ownership for Event Reminder & Confirmation.
 
-Immutable event/session fixtures are separate from a per-review participant registration. A random session capability scopes read/update/finish API calls and cloud REST tool headers. Temporary snapshots and request replay results live in one Node process for up to two hours. During voice, LandingPage polls authoritative results and ignores older revisions. It retains the final snapshot for client-side CSV download after the RTC view unmounts. No permanent storage, actual attendance tracking or messaging is implemented. Multiple instances/serverless workers cannot share these sessions.
+## Components
 
-> Runtime architecture for browser RTC/RTM, Next.js route handlers, and Agora managed agent session.
+One Next.js App Router process serves the browser and routes. RTC carries audio; RTM carries transcript, Agent state, metrics and errors. The server SDK manages the cloud STT/LLM/TTS Agent. Scenario files define the business behavior.
 
-## High-Level Shape
+## Data And Event Flow
 
-- Next.js App Router frontend and API routes in one deployable app.
-- Browser joins Agora RTC channel and uses RTM for transcript/state/metrics/errors.
-- Server-side routes mint token and call Agora Agent Server SDK.
-- Agent executes STT -> LLM -> TTS pipeline in Agora cloud.
+The user start action creates any necessary scenario session, fetches the combined RTC/RTM token and bootstraps RTM plus invite. RTC/microphone hooks wait for the StrictMode guard. Toolkit events feed transcript and Inspector. Renew both token identities consistently; end calls stop, logs out RTM and unmounts hook-owned resources.
 
-## Component Graph
+The invite additionally requires `event_session_id`, created by the scenario session API. Keep the server-bound capability header and tool-call replay handling.
 
-```text
-Browser UI (LandingPage + ConversationComponent)
-  -> GET /api/generate-agora-token
-  -> POST /api/invite-agent
-  -> RTC join/publish mic
-  -> RTM subscribe + AgoraVoiceAI events
-  -> POST /api/stop-conversation
+`get_event` and `update_event` use the server-bound `x-event-session` capability. Updates support confirm, cancel, reschedule, undecided, request_recording and request_callback. Tool-call IDs supply request replay protection. The browser polls current results and keeps the final snapshot for export.
 
-Next.js API routes
-  -> agora-token (RtcTokenBuilder.buildTokenWithRtm)
-  -> agora-agents (start/stop managed agent)
+## Ownership Boundaries
 
-Agora Cloud
-  -> Agent session (Deepgram STT + OpenAI LLM + MiniMax TTS by default)
-  -> RTM payloads (transcript, state, metrics, error)
-```
+LandingPage owns pre-call bootstrap/RTM; ConversationComponent owns joined RTC/toolkit subscriptions. Token/invite/stop routes own privileged operations. `scenarios/04-event-confirmation/` owns business rules/data; tool-contracts owns server-bound tool execution scope. Session evidence and manually selected outcomes are not automatic proof of business completion.
 
-## Start Sequence
+## Runtime Modes
 
-1. UI fetches RTC+RTM token and channel.
-2. UI invites agent and initializes RTM in parallel.
-3. UI mounts conversation view.
-4. `useJoin` connects RTC once `isReady` guard passes.
-5. `AgoraVoiceAI.init()` subscribes transcript/state/metrics streams.
+Local development runs one Next.js process at http://localhost:3000 using `.env.local`. Native production uses `pnpm run build` then `pnpm run start`. Docker runs the same app as non-root UID 1001 on port 3000, without a reverse proxy inside the image. Run one long-lived Node process. Reviews live in process memory for up to two hours and are not shared across workers. Restart loses server state; refresh can lose the browser capability. Download CSV before leaving. Serverless hosting does not support this temporary store as a reliable shared session service.
 
-## End Sequence
-
-1. UI calls `/api/stop-conversation` with `agent_id` if present.
-2. UI logs out RTM client.
-3. RTC hook ownership handles leave/unpublish cleanup.
-4. Component state resets to pre-call shell.
-
-## Core State Domains
-
-- Session bootstrap: `LandingPage` (`agoraData`, `rtmClient`, loading/error flags).
-- RTC transport and mic: `ConversationComponent` + `agora-rtc-react` hooks.
-- Transcript + agent state: `AgoraVoiceAI` events mapped through `lib/conversation.ts`.
-- Metrics and connection issues: `AGENT_METRICS`, `MESSAGE_ERROR`, `SAL_STATUS`, RTM fallback parsing.
-
-## External Dependencies
-
-- `agora-rtc-react` / `agora-rtc-sdk-ng` for media transport.
-- `agora-rtm` for data channel.
-- `agora-agent-client-toolkit` and `agora-agent-uikit` for conversation logic/UI.
-- `agora-agents` for managed agent lifecycle.
-
-## Deployment Modes
-
-- Local development via `pnpm run dev`.
-- Vercel deployment as single Next.js app with server env vars.
-
-## Data and Control Boundaries
-
-- Browser never sees the app certificate; only receives signed short-lived tokens.
-- Agent lifecycle control (`start`, `stop`) is server-routed.
-- Transcript/state/metrics are data-plane RTM events from agent to browser.
-- UI control-plane actions (start/end, renew) originate in `LandingPage`.
-
-## Internal Interfaces Between Components
-
-`LandingPage` -> `ConversationComponent` props:
-
-- `agoraData` (`token`, `uid`, `channel`, optional `agentId`)
-- `rtmClient` (already logged-in and subscribed)
-- `onTokenWillExpire(uid)` callback for dual-token renewal
-- `onEndConversation()` callback for teardown and route stop call
-
-`ConversationComponent` -> child UI components:
-
-- normalized transcript items and current in-progress turn
-- agent visualizer state derived from transport + semantic state
-- connection issue list and derived severity
-- recent metric window for stage latency chips
-
-## Why the App Router Structure Matters
-
-- API handlers under `app/api` co-deploy with UI and share env management.
-- Client components isolate browser-only SDK usage via dynamic import and `ssr: false`.
-- This avoids SSR-side access to WebRTC-dependent modules.
-
-## Change Impact Hints
-
-- Changes to token or invite routes affect both startup and renewal paths.
-- Changes to transcript mapping can break both transcript panel and visualizer semantics.
-- Changes to RTM setup in `LandingPage` affect toolkit subscription readiness.
+Docker embeds the public App ID at build and receives the certificate only at runtime. It copies the actual runtime fixtures and supplies a non-root-owned data directory. File-backed scenarios require a retained writable volume; process-local scenarios require a single long-lived process. See [full architecture](../../../ARCHITECTURE.md).
 
 ## Related Deep Dives
 
-- [conversation_lifecycle.md](L2/conversation_lifecycle.md) — Detailed bootstrapping and teardown timeline.
-- [transcript_pipeline.md](L2/transcript_pipeline.md) — Event mapping, UID remap, in-progress/completed segmentation.
-
-## Scenario 01 UI alignment (2026-10-21)
-
-`ScenarioShell` and `useScenarioUi` compose the entry, persistent identity, activity workspace, Inspector and Build panels around existing session bootstrap. `scenarios/presentation.ts` loads scenario-specific content. `ConversationComponent` reports actual activity/inspection events and uses the adopted transcript and Glass controls. Business views remain scenario-owned below the voice workspace. Tailwind 4/PostCSS, theme recipes and MiSans match scenario 01. `scenarios/runtime-profile.ts` displays the non-secret configured pipeline; keep it aligned with the invite route. Never treat browser fixtures as live RTC/tool acceptance.
+- [Lifecycle](L2/conversation_lifecycle.md)
+- [Tokens](L2/token_model.md)

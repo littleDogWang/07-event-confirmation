@@ -1,6 +1,6 @@
 # Agent Development Guide
 
-This guide is for coding agents making changes in `agent-quickstart-nextjs`.
+This guide is for coding agents making changes in `04-event-confirmation`.
 
 ## Shared scenario UI requirements
 
@@ -23,14 +23,14 @@ This repository uses progressive disclosure documentation. Docs live under `docs
 2. Load ALL 8 files in [docs/ai/L1/](docs/ai/L1/). They are small — load all upfront.
 3. Follow L2 deep-dive links only when L1 isn't detailed enough. The index is at [docs/ai/L1/L2/_index.md](docs/ai/L1/L2/_index.md).
 
-This repo declares `Recipe Role: base` in L0, so also read [docs/ai/RECIPE.md](docs/ai/RECIPE.md) when evaluating extension points, invariants, or stable contracts.
+This repo is a standalone scenario derivative of the official voice quickstart. Also read [docs/ai/RECIPE.md](docs/ai/RECIPE.md) when evaluating extension points, invariants, or stable contracts.
 
 The sections below (Start Here, Patterns, Anti-Patterns, etc.) remain the canonical contributor handbook for hands-on work; the `docs/ai/` tree is the structured summary used by AI agents.
 
 ## Start Here
 
 - Read [README.md](./README.md) for setup, commands, verification, and deployment.
-- Use [docs/ai/RECIPE.md](docs/ai/RECIPE.md) for the base quickstart recipe contract.
+- Use [docs/ai/RECIPE.md](docs/ai/RECIPE.md) for this scenario's extension points, invariants and stable contracts.
 - Use [docs/ai/L1/L2/from_scratch_bootstrap.md](docs/ai/L1/L2/from_scratch_bootstrap.md) for the baseline implementation map.
 - Use [docs/ai/L1/L2/transcript_pipeline.md](docs/ai/L1/L2/transcript_pipeline.md) for transcript and RTM behavior.
 - For layout and responsibilities inside `components/`, `app/api/`, and `lib/`, use [docs/ai/L1/03_code_map.md](docs/ai/L1/03_code_map.md) and [docs/ai/L1/02_architecture.md](docs/ai/L1/02_architecture.md).
@@ -59,19 +59,9 @@ The sections below (Start Here, Patterns, Anti-Patterns, etc.) remain the canoni
 
 ## Supported Modes
 
-### Local Development
+Local development runs one Next.js process at http://localhost:3000 using `.env.local`. Native production uses `pnpm run build` then `pnpm run start`. Docker runs the same app as non-root UID 1001 on port 3000, without a reverse proxy inside the image. Run one long-lived Node process. Reviews live in process memory for up to two hours and are not shared across workers. Restart loses server state; refresh can lose the browser capability. Download CSV before leaving. Serverless hosting does not support this temporary store as a reliable shared session service.
 
-- Run from the repo root with `pnpm run dev`.
-- Next.js serves the app and the route handlers at `http://localhost:3000`.
-- Local credentials are read from `.env.local`, usually written by `agora project env write .env.local`.
-
-### Base quickstart only: Vercel deployment
-
-Scenario 04 review results require one long-running Node process. Do not present serverless deployment as supporting the temporary registration store.
-
-- Deploy the repository as a single Next.js app.
-- Set `NEXT_PUBLIC_AGORA_APP_ID` and `NEXT_AGORA_APP_CERTIFICATE` in the deployment target.
-- Keep `NEXT_AGORA_APP_CERTIFICATE` server-side only.
+Use Node.js 22+ and pnpm 9.15.9. The tracked example is `env.local.example`; local Next.js uses `.env.local`. Docker embeds the public App ID at build time, accepts the certificate only at runtime, and keeps the writable data directory owned by UID 1001. Run `pnpm run verify:docker` separately from `pnpm run verify`; see [README deployment](README.md#deployment).
 
 ## Routing / Ownership
 
@@ -159,6 +149,8 @@ useEffect(() => {
 - Keep README, AGENTS, and `docs/ai/` aligned with implementation changes.
 
 ## Commands
+
+Pinned toolchain: Node.js 22+ and pnpm 9.15.9. `pnpm run verify` is canonical and includes every scenario check. `pnpm run verify:template` checks repository contracts; `pnpm run verify:docker` builds and smoke-tests the production container separately. The full command list is in [README](README.md#commands).
 
 From the repo root:
 

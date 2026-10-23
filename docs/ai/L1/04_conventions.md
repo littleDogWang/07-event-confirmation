@@ -1,94 +1,28 @@
 # 04 Conventions
 
-## Scenario 04 UI and state rules
+> Runtime and change rules for this independent scenario.
 
-Use the adopted scenario-01 UI and Tailwind 4 CSS theme. Semantic tokens are complete colors, used with var(--token). Scenario-01 agent-ui components are adopted for scenario 04. Keep changes scoped to the session-bound participant and render only authoritative API results. Ended results stay in browser memory; new reviews use fresh fixtures. All repository additions are English.
+## Code Style
 
-> Implementation conventions that protect lifecycle correctness, transcript accuracy, and docs/code alignment.
+Use English TypeScript/documentation and existing ESLint conventions. Keep examples fictional and U.S.-based, with explicit IANA time zones and date-correct offsets. Use pinned pnpm 9.15.9; do not rewrite the lockfile with another major.
 
-## React and RTC Lifecycle
+## Runtime Patterns
 
-- Keep RTC client creation StrictMode-safe with `useRef`, not `useMemo`.
-- Use `isReady` guard (`setTimeout(..., 0)` pattern) before `useJoin` and `useLocalMicrophoneTrack`.
-- Do not disable React StrictMode as a workaround.
+Keep StrictMode `isReady` and stable RTC client ownership. Hook cleanup owns leave, microphone closing and publication. Toolkit initialization follows RTC join/RTM readiness. Preserve local-user UID remap and interrupted turns. Tailwind 4 scans actual components through app/globals.css; do not recreate old HSL-channel wrappers.
 
-## Hook Ownership Rules
+`get_event` and `update_event` use the server-bound `x-event-session` capability. Updates support confirm, cancel, reschedule, undecided, request_recording and request_callback. Tool-call IDs supply request replay protection. The browser polls current results and keeps the final snapshot for export.
 
-- `useJoin` owns `client.leave()`; never leave manually.
-- `useLocalMicrophoneTrack` owns track lifecycle; never call `.close()` manually.
-- `usePublish` owns publish state; mute with `track.setEnabled()`.
+The assistant cannot cancel the event itself, change its timetable, send a recording, schedule a real callback or verify actual attendance. Recording and callback actions record preferences only.
 
-## Transcript Conventions
+## Testing Patterns
 
-- `uid === "0"` from toolkit is local-user sentinel and must be remapped to real `client.uid`.
-- Include `INTERRUPTED` in history list; only filter out `IN_PROGRESS`.
-- Normalize punctuation spacing for compacted provider output.
-- Normalize timestamps to milliseconds before issue rendering.
+Use mocked API/scenario checks for deterministic contracts and isolated temporary storage for writes. `pnpm run verify` is canonical; `pnpm run verify:docker` separately checks image/startup/route behavior. Real speech and cloud callbacks remain independent. For UI changes, render and inspect actual desktop/mobile states; do not infer visuals from source.
 
-## Token and RTM Contract
+## Documentation Changes
 
-- Token route must use `RtcTokenBuilder.buildTokenWithRtm`.
-- RTC-only token builders break RTM login/subscription.
-- Renewal flow independently mints RTC and RTM tokens while keeping shared channel.
-
-## API and Error Handling Style
-
-- Route handlers validate required body/env early and return clear status codes.
-- Stop route is idempotent for already-stopping/not-found agent states.
-- Frontend logs detailed technical errors and shows concise user-facing messages.
-
-## Styling and UI Kit Rules
-
-- Tailwind 4 scans UIKit with @source in app/globals.css.
-- Prefer existing quickstart layout components over introducing parallel shells.
-
-## Documentation Synchronization
-
-When changing workflow/contracts/ownership in `components` or `app/api`, update:
-
-- `README.md`
-- `AGENTS.md`
-- `docs/ai/RECIPE.md` if extension points, invariants, or stable contracts changed
-- relevant `docs/ai/L1/*.md` and `docs/ai/L0_repo_card.md` `Last Reviewed`
-
-## Git Conventions
-
-- Conventional commits: `type: description` or `type(scope): description`.
-- Branch names: `type/short-description` lowercase with hyphens.
-- No AI tool names in commit/PR text.
-- No `--no-verify`, no git identity config edits.
-
-## Route Handler Conventions
-
-- Parse and validate request body at the top of handler.
-- Return `400` for client payload problems and `500` for internal failures.
-- Keep response payloads explicit and JSON-serializable.
-- Prefer helper functions for repeated env checks or error classification.
-
-## Commenting and Readability Style
-
-- Comments should capture lifecycle reasoning or non-obvious constraints.
-- Avoid comments that merely restate code.
-- Keep runtime-sensitive constraints close to the guarded code path.
-
-## Verification Conventions
-
-- For route or contract changes, run `pnpm run verify:api` first.
-- For UI/client runtime changes, run at least lint + typecheck + build.
-- Prefer narrow checks during iteration, full `pnpm run verify` before handoff.
-
-## Pull Request Hygiene
-
-- Keep scope small and copyable for quickstart consumers.
-- Include doc updates in same change when workflow/contracts are touched.
-- Use present-tense lowercase conventional commit descriptions.
-- Avoid adding hidden requirements not represented in `env.local.example` and README.
+Synchronize README, AGENTS, ARCHITECTURE, public/internal recipes and affected L1/L2 files when workflows, environment, state or interfaces change. Update L0's review date. Every L1 file ends in Related Deep Dives. Use conventional commits only when explicitly requested; remote writes need their own authorization.
 
 ## Related Deep Dives
 
-- [conversation_lifecycle.md](L2/conversation_lifecycle.md) — Why StrictMode guard and hook ownership are required.
-- [transcript_pipeline.md](L2/transcript_pipeline.md) — UID remapping and turn-status handling rationale.
-
-## Scenario 01 UI alignment (2026-10-21)
-
-`ScenarioShell` and `useScenarioUi` compose the entry, persistent identity, activity workspace, Inspector and Build panels around existing session bootstrap. `scenarios/presentation.ts` loads scenario-specific content. `ConversationComponent` reports actual activity/inspection events and uses the adopted transcript and Glass controls. Business views remain scenario-owned below the voice workspace. Tailwind 4/PostCSS, theme recipes and MiSans match scenario 01. `scenarios/runtime-profile.ts` displays the non-secret configured pipeline; keep it aligned with the invite route. Never treat browser fixtures as live RTC/tool acceptance.
+- [StrictMode](L2/strict_mode_lifecycle.md)
+- [Transcript pipeline](L2/transcript_pipeline.md)
