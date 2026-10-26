@@ -2,12 +2,12 @@
 
 import { Check, Clock3, Download, FileVideo, Phone } from 'lucide-react';
 import { Button } from './ui/button';
-import { eventResultCsv } from '@/scenarios/04-event-confirmation/export';
+import { eventResultCsv } from '@/lib/event-confirmation/export';
 import {
   formatEventTime,
   responseLabel,
   type EventSnapshot,
-} from '@/scenarios/04-event-confirmation/types';
+} from '@/lib/event-confirmation/types';
 
 export function EventResultCard({
   result,

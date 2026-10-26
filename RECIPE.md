@@ -30,7 +30,7 @@ Run [Quick Start](#5-quick-start), open [http://localhost:3000](http://localhost
 | Change a session | I cannot make that session. What other session is available? | In tool mode, it offers configured alternatives and asks for confirmation before updating. |
 | Record interest | I would prefer the recording. | In tool mode, it records the preference without claiming an email or recording was sent. |
 
-Rows that describe tool actions require the optional public HTTPS tool configuration. In default mode, expect the limitations described above. These are acceptance cases to try, not a claim that a live voice run has passed. For the full scenario matrix, see [acceptance.md](scenarios/04-event-confirmation/acceptance.md).
+Rows that describe tool actions require the optional public HTTPS tool configuration. In default mode, expect the limitations described above. These are acceptance cases to try, not a claim that a live voice run has passed. For the full scenario matrix, see [acceptance.md](docs/scenario/acceptance.md).
 
 ## 3. Architecture & Tech Stack
 
@@ -61,7 +61,7 @@ flowchart LR
 | Next.js route handlers | Keep the App Certificate server-side, issue combined RTC/RTM tokens and manage Agent sessions. |
 | Scenario modules | Supply instructions, demo data and the optional business API/tool contracts. |
 
-The client uses `agora-rtc-react`, `agora-rtc-sdk-ng`, `agora-rtm` and `agora-agent-client-toolkit`; the server uses `agora-agents`. The configured pipeline is Deepgram nova-3 → OpenAI gpt-4o-mini → MiniMax speech_2_6_turbo with English speech. See [the invite route](app/api/invite-agent/route.ts) and [runtime profile](scenarios/runtime-profile.ts) when changing providers. No separate vendor API key is required for the default Agora-managed configuration.
+The client uses `agora-rtc-react`, `agora-rtc-sdk-ng`, `agora-rtm` and `agora-agent-client-toolkit`; the server uses `agora-agents`. The configured pipeline is Deepgram nova-3 → OpenAI gpt-4o-mini → MiniMax speech_2_6_turbo with English speech. See [the invite route](app/api/invite-agent/route.ts) and [runtime profile](lib/runtime-profile.ts) when changing providers. No separate vendor API key is required for the default Agora-managed configuration.
 
 ## 4. Prerequisites & Configuration
 
@@ -114,24 +114,24 @@ Open [http://localhost:3000](http://localhost:3000), choose **Start event remind
 
 `get_event` and `update_event` use the server-bound `x-event-session` capability. Updates support confirm, cancel, reschedule, undecided, request_recording and request_callback. Tool-call IDs supply request replay protection. The browser polls current results and keeps the final snapshot for export.
 
-The invite additionally requires `event_session_id`, created by the scenario session API. Keep the server-bound capability header and tool-call replay handling. The supplied browser already handles this startup sequence. See [the scenario guide](scenarios/04-event-confirmation/README.md) for additional behavior and contracts.
+The invite additionally requires `event_session_id`, created by the scenario session API. Keep the server-bound capability header and tool-call replay handling. The supplied browser already handles this startup sequence. See [the scenario guide](docs/scenario/README.md) for additional behavior and contracts.
 
 ## 7. Customize for Your Business
 
 | Change | Source | How |
 | --- | --- | --- |
-| Event and participant fixtures | [events.json](scenarios/04-event-confirmation/events.json) | Replace the fictional event, available sessions and participant information; keep dates and time-zone labels consistent. |
-| Conversation | [config.ts](scenarios/04-event-confirmation/config.ts) | Adapt the reminder, discussion-only mode and confirmation requirements. |
-| State and export | [events.ts](scenarios/04-event-confirmation/events.ts) | Adapt participant-registration rules; export.ts owns CSV output and escaping. |
+| Event and participant fixtures | [events.json](lib/event-confirmation/events.json) | Replace the fictional event, available sessions and participant information; keep dates and time-zone labels consistent. |
+| Conversation | [config.ts](lib/agent-config.ts) | Adapt the reminder, discussion-only mode and confirmation requirements. |
+| State and export | [events.ts](lib/event-confirmation/events.ts) | Adapt participant-registration rules; export.ts owns CSV output and escaping. |
 
 To use an event-registration service, replace temporary registration reads/writes with participant-scoped service calls and preserve explicit confirmation for cancellation and rescheduling. Verify that changing one participant never changes the event timetable or another registration.
 
 Shared integration points:
 
-- [scenarios/index.ts](scenarios/index.ts) assembles the selected scenario prompt.
-- [scenarios/tool-contracts.ts](scenarios/tool-contracts.ts) defines business tool schemas and server-bound routes.
+- [lib/agent-config.ts](lib/agent-config.ts) assembles the selected scenario prompt.
+- [lib/agent-tools.ts](lib/agent-tools.ts) defines business tool schemas and server-bound routes.
 - [app/api/invite-agent/route.ts](app/api/invite-agent/route.ts) selects the prompt, providers, turn detection and session settings.
-- [scenarios/presentation.ts](scenarios/presentation.ts) selects the scenario presentation; edit its scenario module for visible content.
+- [lib/presentation.ts](lib/presentation.ts) selects the scenario presentation; edit its scenario module for visible content.
 - [docs/ai/RECIPE.md](docs/ai/RECIPE.md) retains the machine-readable integration profile and lifecycle contracts.
 
 Keep combined RTC/RTM token generation, the StrictMode initialization guard, toolkit local-user UID remapping and interrupted transcript turns intact. Let the Agora React hooks own microphone and RTC teardown. Preserve server-bound business session scope when extending tools.
@@ -211,4 +211,4 @@ With the local prerequisites and credentials configured, also run `pnpm run veri
 | The assistant discusses the task but does not save or change it | Check whether the optional public tool origin is enabled. The default conversation has the limits in section 1. |
 | A tool fails or a result disappears | Inspect the actual API error, callback reachability and this scenario's storage/lifetime limits; do not claim success from speech alone. |
 
-See [the contributor guide](AGENTS.md), [scenario guide](scenarios/04-event-confirmation/README.md) and [MIT License](LICENSE) for further details.
+See [the contributor guide](AGENTS.md), [scenario guide](docs/scenario/README.md) and [MIT License](LICENSE) for further details.

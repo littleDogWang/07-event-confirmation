@@ -16,3 +16,13 @@ TOP_TEN_SCENARIO_TOOL_BASE_URL is optional. Only an explicitly configured public
 ## U.S. example data
 
 The fictional U.S. webinar uses `America/New_York`. October sessions use EDT (`-04:00`); UI labels and CSV use the configured event time zone.
+
+## Source locations
+
+This guide lives in documentation; executable code uses the standalone Next.js
+Quickstart layout. Agent instructions and prompt assembly are in
+[lib/agent-config.ts](../../lib/agent-config.ts), optional tool contracts are in
+[lib/agent-tools.ts](../../lib/agent-tools.ts), and presentation content is in
+[lib/presentation.ts](../../lib/presentation.ts). Business modules and fixtures
+live in [lib/event-confirmation/](../../lib/event-confirmation/). File basenames in this guide
+refer to these source locations, not to files next to this document.

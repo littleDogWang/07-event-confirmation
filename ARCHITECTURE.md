@@ -4,7 +4,7 @@
 
 Riley helps a fictional webinar participant review their registration, confirm plans or choose an available alternative session. With business tools enabled, the app updates only that participant's temporary registration and retains the result for CSV download.
 
-One Next.js process owns the browser application and its HTTP routes. Agora cloud owns the managed STT → LLM → TTS pipeline; the browser is not a local speech/model runtime. The default provider configuration is recorded in the invite route and `scenarios/runtime-profile.ts`.
+One Next.js process owns the browser application and its HTTP routes. Agora cloud owns the managed STT → LLM → TTS pipeline; the browser is not a local speech/model runtime. The default provider configuration is recorded in the invite route and `lib/runtime-profile.ts`.
 
 ## Component Topology
 
@@ -32,8 +32,8 @@ Scenario routes -> process-local state
 - `components/ConversationComponent.tsx`: RTC/microphone hooks, toolkit events and transcript snapshots.
 - `app/api/generate-agora-token/route.ts`: RTM-capable token creation.
 - `app/api/invite-agent/route.ts`: privileged Agent configuration and startup.
-- `scenarios/04-event-confirmation/`: source of truth for scenario-specific rules and data.
-- `scenarios/tool-contracts.ts`: available tools, parameter schemas and server-bound call scope.
+- `lib/event-confirmation/`: source of truth for scenario-specific rules and data.
+- `lib/agent-tools.ts`: available tools, parameter schemas and server-bound call scope.
 - `lib/conversation.ts`: transcript UID/text normalization.
 
 ## Authentication And Secrets
@@ -59,4 +59,4 @@ The invite additionally requires `event_session_id`, created by the scenario ses
 
 The token route returns `{ token, uid, channel }`; stop accepts `{ agent_id }` and handles an already-stopping session idempotently. The assistant discusses the event and attendance intent but cannot record registration changes. An unmodified result remains 'No response recorded'. `get_event` and `update_event` read or update the current temporary review. The server binds its capability in the tool header; the model cannot choose another participant's session.
 
-See [Interfaces](docs/ai/L1/06_interfaces.md), [internal recipe](docs/ai/RECIPE.md) and [scenario guide](scenarios/04-event-confirmation/README.md) for contracts. Static checks, native startup, Docker startup and complete live speech/tool outcomes are separate evidence.
+See [Interfaces](docs/ai/L1/06_interfaces.md), [internal recipe](docs/ai/RECIPE.md) and [scenario guide](docs/scenario/README.md) for contracts. Static checks, native startup, Docker startup and complete live speech/tool outcomes are separate evidence.

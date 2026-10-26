@@ -313,7 +313,7 @@ async function verifyInviteAgentValidation() {
 async function verifyInviteAgentSuccess() {
   const { POST: inviteAgent } = await import('../app/api/invite-agent/route');
   const originalCreateSession = Agent.prototype.createSession;
-  const { createEventSession } = await import('../scenarios/04-event-confirmation/events');
+  const { createEventSession } = await import('../lib/event-confirmation/events');
   const eventSession = createEventSession();
   const originalToolBase = process.env.TOP_TEN_SCENARIO_TOOL_BASE_URL;
   process.env.TOP_TEN_SCENARIO_TOOL_BASE_URL = 'https://events.example.com';

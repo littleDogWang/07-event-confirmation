@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { Agent } from 'agora-agents';
-import { formatEventTime, responseLabel } from '../scenarios/04-event-confirmation/types';
+import { formatEventTime, responseLabel } from '../lib/event-confirmation/types';
 
 assert.match(formatEventTime('2026-10-20T09:00:00-04:00'), /9:00 AM EDT/);
 assert.match(formatEventTime('2026-12-20T09:00:00-05:00'), /9:00 AM EST/);
@@ -11,9 +11,9 @@ import {
   updateRegistration,
   finishEventSession,
   EventError,
-} from '../scenarios/04-event-confirmation/events';
-import { eventResultCsv } from '../scenarios/04-event-confirmation/export';
-import { getScenarioTools } from '../scenarios/tool-contracts';
+} from '../lib/event-confirmation/events';
+import { eventResultCsv } from '../lib/event-confirmation/export';
+import { getScenarioTools } from '../lib/agent-tools';
 import {
   GET,
   POST,

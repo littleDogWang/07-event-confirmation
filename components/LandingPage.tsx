@@ -7,7 +7,7 @@ import { EventResultCard } from './EventResultCard';
 import {
   formatEventTime,
   type EventSnapshot,
-} from '@/scenarios/04-event-confirmation/types';
+} from '@/lib/event-confirmation/types';
 import type { RTMClient } from 'agora-rtm';
 import type {
   AgoraTokenData,

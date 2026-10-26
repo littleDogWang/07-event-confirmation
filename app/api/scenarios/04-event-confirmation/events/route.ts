@@ -1,12 +1,12 @@
 import {
   getEventSession,
   updateRegistration,
-} from '@/scenarios/04-event-confirmation/events';
+} from '@/lib/event-confirmation/events';
 import {
   requireEventSession,
   eventJson,
   eventFailure,
-} from '@/scenarios/04-event-confirmation/http';
+} from '@/lib/event-confirmation/http';
 
 export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {

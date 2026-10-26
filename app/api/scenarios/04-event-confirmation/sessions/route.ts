@@ -2,13 +2,13 @@ import {
   createEventSession,
   getEventSession,
   finishEventSession,
-} from '@/scenarios/04-event-confirmation/events';
+} from '@/lib/event-confirmation/events';
 import {
   requireEventSession,
   eventJson,
   eventFailure,
-} from '@/scenarios/04-event-confirmation/http';
-import { getToolBaseUrl } from '@/scenarios/tool-contracts';
+} from '@/lib/event-confirmation/http';
+import { getToolBaseUrl } from '@/lib/agent-tools';
 
 export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {

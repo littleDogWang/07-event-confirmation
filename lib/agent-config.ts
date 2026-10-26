@@ -1,5 +1,5 @@
-import type { ScenarioConfig } from '../types';
-import { eventFixture, participantFixture } from './types';
+import type { ScenarioConfig } from '../types/agent-config';
+import { eventFixture, participantFixture } from './event-confirmation/types';
 
 export const config: ScenarioConfig = {
   id: '04-event-confirmation',
@@ -28,3 +28,20 @@ export const discussionInstructions = [
   'Event and participant information: ' +
     JSON.stringify({ event: eventFixture, participant: participantFixture }),
 ].join('\n');
+
+function formatScenarioPrompt(config: ScenarioConfig): string {
+  return `You are the ${config.role}
+
+# Goal and conversation flow
+${config.workflow}
+
+# Safety and truthfulness rules
+${config.guardrails}
+
+# Demo boundary
+This browser demo only has the capabilities described in this scenario. Never claim that an external action, booking, update, payment, transfer, or record write succeeded unless a configured tool returned that result.
+${config.fixtureSummary ? `\n# Demo data\n${config.fixtureSummary}` : ''}`;
+}
+
+export function getScenarioConfig(): ScenarioConfig { return config; }
+export function getScenarioPrompt(_scenarioId?: string): string { return formatScenarioPrompt(config); }
