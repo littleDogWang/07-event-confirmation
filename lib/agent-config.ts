@@ -2,7 +2,7 @@ import type { ScenarioConfig } from '../types/agent-config';
 import { eventFixture, participantFixture } from './event-confirmation/types';
 
 export const config: ScenarioConfig = {
-  id: '04-event-confirmation',
+  id: '07-event-confirmation',
   title: 'Event reminder and confirmation',
   role: 'event assistant Riley from Agora',
   workflow:

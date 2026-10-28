@@ -1,6 +1,6 @@
 # Agent Development Guide
 
-This guide is for coding agents making changes in `04-event-confirmation`.
+This guide is for coding agents making changes in `07-event-confirmation`.
 
 
 ## U.S. scenario content
@@ -31,7 +31,7 @@ The sections below (Start Here, Patterns, Anti-Patterns, etc.) remain the canoni
 - Use [docs/ai/L1/L2/transcript_pipeline.md](docs/ai/L1/L2/transcript_pipeline.md) for transcript and RTM behavior.
 - For layout and responsibilities inside `components/`, `app/api/`, and `lib/`, use [docs/ai/L1/03_code_map.md](docs/ai/L1/03_code_map.md) and [docs/ai/L1/02_architecture.md](docs/ai/L1/02_architecture.md).
 
-## Scenario 04 runtime contract
+## Scenario 07 runtime contract
 
 - Event/session fixtures are immutable. State changes target one participant registration in one temporary review.
 - Store sessions only in process memory; keep the last confirmed snapshot in browser React state for display/CSV after ending. Do not add a database, disk files or localStorage.

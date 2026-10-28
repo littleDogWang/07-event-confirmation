@@ -17,11 +17,11 @@ import { getScenarioTools } from '../lib/agent-tools';
 import {
   GET,
   POST,
-} from '../app/api/scenarios/04-event-confirmation/events/route';
+} from '../app/api/scenarios/07-event-confirmation/events/route';
 import {
   POST as sessionPost,
   GET as sessionGet,
-} from '../app/api/scenarios/04-event-confirmation/sessions/route';
+} from '../app/api/scenarios/07-event-confirmation/sessions/route';
 import { POST as invite } from '../app/api/invite-agent/route';
 
 function fails(operation: () => unknown, code: string) {
@@ -157,7 +157,7 @@ async function main() {
   assert.equal(fresh.registration.recordingRequested, false);
 
   const request = (body: unknown, id?: string) =>
-    new Request('http://localhost/api/scenarios/04-event-confirmation/events', {
+    new Request('http://localhost/api/scenarios/07-event-confirmation/events', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -216,7 +216,7 @@ async function main() {
   assert.equal((await sessionPost(request({ action: 'create' }))).status, 201);
 
   const tools = getScenarioTools(
-    '04-event-confirmation',
+    '07-event-confirmation',
     'https://events.example.com/',
     fresh.sessionId,
   );
@@ -228,7 +228,7 @@ async function main() {
   );
   assert.equal(
     getScenarioTools(
-      '04-event-confirmation',
+      '07-event-confirmation',
       'http://localhost:3000',
       fresh.sessionId,
     ).length,

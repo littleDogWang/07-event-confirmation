@@ -19,8 +19,8 @@ The tracked schema is `env.local.example`; the local file is `.env.local`. Keep 
 ## Setup
 
 ```bash
-git clone https://github.com/littleDogWang/04-event-confirmation.git
-cd 04-event-confirmation
+git clone https://github.com/littleDogWang/07-event-confirmation.git
+cd 07-event-confirmation
 pnpm install --frozen-lockfile
 cp env.local.example .env.local
 ```

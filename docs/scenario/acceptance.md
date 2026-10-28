@@ -10,6 +10,6 @@
 - Results remain visible and downloadable after finishing. New review resets preferences and response. Refresh/restart recovery is not promised.
 - CSV content matches the displayed confirmed snapshot, including selected session and preferences; quotes, line breaks and formula prefixes are handled.
 - A failed tool update must not appear successful. Failed result refresh retains the last confirmed snapshot with an explicit notice.
-- The starter entry card and main identity explain scenario 04. Verify starter components/theme, desktop/mobile layouts, conversation, collapsed event context, auxiliary result and ended states.
+- The starter entry card and main identity explain scenario 07. Verify starter components/theme, desktop/mobile layouts, conversation, collapsed event context, auxiliary result and ended states.
 - Start event reminder directly starts voice. Missing HTTPS registration tools do not disable it: the assistant explicitly states it cannot record changes, the response remains unchanged, and the ended result reports No response recorded.
 - Verify local domain/API checks, lint, typecheck and production build separately from real Agora audio/tool acceptance. Browser simulations are not live voice evidence.

@@ -16,8 +16,8 @@ Read the [eight-part recipe](RECIPE.md) for example conversations and business c
 ## Run It
 
 ```bash
-git clone https://github.com/littleDogWang/04-event-confirmation.git
-cd 04-event-confirmation
+git clone https://github.com/littleDogWang/07-event-confirmation.git
+cd 07-event-confirmation
 pnpm install --frozen-lockfile
 cp env.local.example .env.local
 ```
@@ -137,8 +137,8 @@ Native hosting runs `pnpm run build` and `pnpm run start` on the documented Node
 ### Docker
 
 ```bash
-docker build --build-arg NEXT_PUBLIC_AGORA_APP_ID=YOUR_AGORA_APP_ID -t 04-event-confirmation:local .
-docker run --rm -p 3000:3000 --env-file .env.local 04-event-confirmation:local
+docker build --build-arg NEXT_PUBLIC_AGORA_APP_ID=YOUR_AGORA_APP_ID -t 07-event-confirmation:local .
+docker run --rm -p 3000:3000 --env-file .env.local 07-event-confirmation:local
 ```
 
 Replace `YOUR_AGORA_APP_ID` with the public App ID used in `.env.local`. Next.js embeds that identifier in the browser bundle, so changing projects requires rebuilding the image. The App Certificate is supplied only at container runtime. A container restart does not preserve process memory. This image does not add a shared state service.

@@ -70,7 +70,7 @@ const AgoraProvider = dynamic(
   { ssr: false },
 );
 
-const sessionEndpoint = '/api/scenarios/04-event-confirmation/sessions';
+const sessionEndpoint = '/api/scenarios/07-event-confirmation/sessions';
 
 export default function LandingPage() {
   const [result, setResult] = useState<EventSnapshot | null>(null);

@@ -21,7 +21,7 @@ Keep combined token privileges, StrictMode initialization, toolkit readiness and
 
 ## Documentation Or Contract Drift
 
-The repository identity must be `littleDogWang/04-event-confirmation`, while upstream attribution remains separate. Keep invite fields, data paths, time zones, Docker volume behavior and pnpm/verification commands synchronized. Run `pnpm run verify:template` for structure/link drift and the canonical checks for source behavior.
+The repository identity must be `littleDogWang/07-event-confirmation`, while upstream attribution remains separate. Keep invite fields, data paths, time zones, Docker volume behavior and pnpm/verification commands synchronized. Run `pnpm run verify:template` for structure/link drift and the canonical checks for source behavior.
 
 ## Related Deep Dives
 

@@ -1,5 +1,5 @@
 {
-  "name": "04-event-confirmation",
+  "name": "07-event-confirmation",
   "version": "0.1.0",
   "description": "Review a webinar registration and record a participant's response by voice.",
   "private": true,

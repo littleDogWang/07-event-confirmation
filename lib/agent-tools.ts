@@ -23,7 +23,7 @@ export function getScenarioTools(
   const origin = getToolBaseUrl(baseUrl);
   if (!origin || !sessionId) return [];
   const server = {
-    url: origin + '/api/scenarios/04-event-confirmation/events',
+    url: origin + '/api/scenarios/07-event-confirmation/events',
     headers: { 'x-event-session': sessionId },
   };
   return [
