@@ -1,28 +1,24 @@
-# 04 Event reminder and confirmation
+# Event Reminder Assistant
 
-Start event reminder opens a real voice conversation with Riley directly. The interface centers the conversation and voice dock; event details and the recorded response are secondary. End the reminder to retain and download its result as CSV. Start another reminder uses a fresh isolated registration. No manual response form is presented.
+Discuss a webinar, attendance plans and questions about joining.
 
-Voice uses the existing Agora pipeline. TOP_TEN_SCENARIO_TOOL_BASE_URL enables session-scoped registration REST tools. Without it, the assistant explicitly discusses the event without recording changes; voice is not blocked. Spoken intention is never shown as a saved response. When no update was recorded, the ended result says No response recorded.
+## Conversation flow
 
-All state is temporary in one long-running Node process and browser memory. There is no database or external business integration. Refresh/restart may lose access; download a copy first. See design.md, acceptance.md.
+Ask whether now is a good time to discuss the webinar. Use the bundled public event description, organizer, time zone and joining guidance. Ask whether the caller plans to attend and what questions they have. Use dates and personal registration details only when the caller provides them; refer them to their existing registration confirmation for the actual schedule and join link. Discuss attendance intent, a preferred alternative or recording interest, then recap it verbally. Respect uncertainty, corrections and requests to stop, asking one question at a time.
 
+## Boundaries
 
-## Local conversation and optional tools
+No participant record, registration, attendance tracker or event-update system is connected. Do not assume the caller is Alex or is registered. Do not save a response, confirm attendance in a system, change or cancel registration, change the event timetable, send a recording or email, arrange a callback or claim a calendar update.
 
-Default conversations retain the existing event/participant fixture and discussion-only registration prompt. Attendance intent, session preferences and follow-up interest can be discussed but not recorded. A configured public HTTPS tool origin enables the existing session-bound registration tools.
+This first version is conversation-only. No business data lookup, external tools, database, record writes, saved results, or cross-session business history are available. Keep user-provided details only in the current conversation. Never claim an order, appointment, registration, feedback submission, callback, payment, shipment or other external action was created, saved or completed. Offer a verbal summary and explain the appropriate human next step instead. Do not request passwords, verification codes, payment details or unnecessary personal identifiers.
 
-TOP_TEN_SCENARIO_TOOL_BASE_URL is optional. Only an explicitly configured public HTTPS endpoint enables tools; malformed, HTTP, localhost and local/private origins leave tools disabled. URL validation does not prove network reachability. No tunnel, knowledge base or database is needed for the default conversation. Local checks do not establish live speech or cloud callback acceptance.
+## Trying the conversation
 
-## U.S. example data
+- What is the webinar about?
+- I am not sure I can attend. Help me review my options.
 
-The fictional U.S. webinar uses `America/New_York`. October sessions use EDT (`-04:00`); UI labels and CSV use the configured event time zone.
+Ask for a verbal recap before ending. Only the current page retains transcript and diagnostic state; no result, order, appointment, registration or feedback record is saved.
 
-## Source locations
+## Implementation
 
-This guide lives in documentation; executable code uses the standalone Next.js
-Quickstart layout. Agent instructions and prompt assembly are in
-[lib/agent-config.ts](../../lib/agent-config.ts), optional tool contracts are in
-[lib/agent-tools.ts](../../lib/agent-tools.ts), and presentation content is in
-[lib/presentation.ts](../../lib/presentation.ts). Business modules and fixtures
-live in [lib/event-confirmation/](../../lib/event-confirmation/). File basenames in this guide
-refer to these source locations, not to files next to this document.
+Behavior lives in lib/agent-config.ts. The page uses the shared voice lifecycle. lib/agent-tools.ts is empty and all business API routes return HTTP 410. See [acceptance cases](acceptance.md).

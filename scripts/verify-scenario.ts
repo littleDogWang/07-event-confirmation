@@ -1,6 +1,12 @@
+import assert from 'node:assert/strict';
 import { getScenarioConfig, getScenarioPrompt } from '../lib/agent-config';
+import { getScenarioPresentation } from '../lib/presentation';
 const config = getScenarioConfig();
-if (config.id !== '07-event-confirmation') throw new Error(`Expected 07-event-confirmation, got ${config.id}`);
-for (const field of ['role', 'workflow', 'guardrails']) { if (!config[field as keyof typeof config]) throw new Error(`Missing ${field}`); }
-if (!getScenarioPrompt().includes('# Goal and conversation flow')) throw new Error('Scenario prompt was not formatted');
-console.log(`Scenario config passed: ${config.id}`);
+assert.equal(config.id, "07-event-confirmation");
+assert.equal(getScenarioPresentation().id, config.id);
+for (const key of ['role', 'workflow', 'guardrails', 'greeting'] as const) assert.ok(config[key]);
+assert.match(getScenarioPrompt(), /# Goal and conversation flow/);
+assert.match(getScenarioPrompt(), /# First-version boundary/);
+assert.match(getScenarioPrompt(), /No business data lookup/);
+assert.doesNotMatch(getScenarioPrompt(), /AG-100[123]|patient-alex|AST-R3001|travelerKey|participantId/);
+console.log('Scenario conversation contract passed: ' + config.id);

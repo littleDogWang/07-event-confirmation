@@ -4,24 +4,24 @@ export type { ScenarioPresentation } from '@/types/presentation';
 export const presentation: ScenarioPresentation = {
   "id": "07-event-confirmation",
   "name": "Event Reminder Assistant",
-  "purpose": "Event plans and registration response",
+  "purpose": "Scenario voice conversation",
   "headline": [
     "Confirm your plans."
   ],
-  "summary": "Review the event with Riley and record your attendance plans when tools are connected.",
-  "featuresHeading": "Beyond starter",
+  "summary": "Discuss a webinar, attendance plans and questions about joining.",
+  "featuresHeading": "In this conversation",
   "features": [
     {
-      "emoji": "📅",
-      "title": "Event & session details"
+      "emoji": "💬",
+      "title": "Webinar questions"
     },
     {
-      "emoji": "✅",
-      "title": "Registration response"
+      "emoji": "🎙️",
+      "title": "Attendance-plan discussion"
     },
     {
-      "emoji": "📥",
-      "title": "Download your result"
+      "emoji": "📝",
+      "title": "Verbal reminder recap"
     }
   ],
   "builtWith": [
@@ -30,22 +30,22 @@ export const presentation: ScenarioPresentation = {
     "Next.js"
   ],
   "startLabel": "Start event reminder",
-  "boundaryShort": "Temporary registration responses. No attendance tracking, email or scheduled callback.",
+  "boundaryShort": "Conversation only. No registration updates, saved responses, emails or callbacks.",
   "outcomes": [
     {
-      "id": "reviewed",
-      "label": "I reviewed my event plans"
+      "id": "helpful",
+      "label": "The conversation helped"
     },
     {
-      "id": "needs-help",
-      "label": "I need more help"
+      "id": "needs-guidance",
+      "label": "I need more guidance"
     }
   ],
   "developer": {
-    "sourceUrl": "https://github.com/AgoraIO-Conversational-AI/agent-quickstart-nextjs",
-    "runCommand": "pnpm install\nagora login\nagora project use <your-project>\nagora project env write .env.local\npnpm dev",
+    "sourceUrl": "https://github.com/littleDogWang/07-event-confirmation",
+    "runCommand": "pnpm install --frozen-lockfile\npnpm run doctor\npnpm run dev",
     "skillsCommand": "npx skills add github:AgoraIO/skills",
-    "assistantPrompt": "Use Agora Skills to work in the existing 07-event-confirmation scenario checkout. Preserve the working Agora session lifecycle and business contracts. Help me adapt its business data and assistant instructions for my workflow.",
+    "assistantPrompt": "Work in this existing 07-event-confirmation voice demo. Preserve Agora RTC/RTM lifecycle and the conversation-only first-version boundary. Adapt the assistant instructions and static public background without adding business tools, records, data APIs or persistence.",
     "docsUrl": "https://docs.agora.io/en/ai/build/build-server-client",
     "sdkUrl": "https://www.npmjs.com/package/agora-agents",
     "consoleUrl": "https://console.agora.io/",
@@ -53,21 +53,19 @@ export const presentation: ScenarioPresentation = {
     "skillsUrl": "https://github.com/AgoraIO/skills",
     "extensionPoints": [
       {
-        "title": "Change assistant instructions",
+        "title": "Change the conversation",
         "path": "lib/agent-config.ts"
       },
       {
         "title": "Choose models and voice",
-        "path": "app/api/invite-agent/route.ts"
+        "path": "lib/runtime-profile.ts"
       },
       {
-        "title": "Adapt scenario UI content",
+        "title": "Adapt scenario UI copy",
         "path": "lib/presentation.ts"
       }
     ]
   }
 };
 
-export function getScenarioPresentation(): ScenarioPresentation {
-  return presentation;
-}
+export function getScenarioPresentation(): ScenarioPresentation { return presentation; }

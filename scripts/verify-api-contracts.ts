@@ -313,10 +313,6 @@ async function verifyInviteAgentValidation() {
 async function verifyInviteAgentSuccess() {
   const { POST: inviteAgent } = await import('../app/api/invite-agent/route');
   const originalCreateSession = Agent.prototype.createSession;
-  const { createEventSession } = await import('../lib/event-confirmation/events');
-  const eventSession = createEventSession();
-  const originalToolBase = process.env.TOP_TEN_SCENARIO_TOOL_BASE_URL;
-  process.env.TOP_TEN_SCENARIO_TOOL_BASE_URL = 'https://events.example.com';
   let capturedSessionConfig: {
     channel?: string;
     agentUid?: string;
@@ -339,7 +335,6 @@ async function verifyInviteAgentSuccess() {
       body: JSON.stringify({
         requester_id: 'user-4321',
         channel_name: 'test-channel',
-        event_session_id: eventSession.sessionId,
       }),
       method: 'POST',
     });
@@ -355,7 +350,7 @@ async function verifyInviteAgentSuccess() {
       'POST /api/invite-agent should return the started agent id',
     );
     assert(
-      body.recording_available === true && body.state === 'RUNNING',
+      body.state === 'RUNNING',
       'POST /api/invite-agent should return RUNNING state',
     );
     assert(
@@ -383,8 +378,6 @@ async function verifyInviteAgentSuccess() {
     );
   } finally {
     Agent.prototype.createSession = originalCreateSession;
-    if (originalToolBase === undefined) delete process.env.TOP_TEN_SCENARIO_TOOL_BASE_URL;
-    else process.env.TOP_TEN_SCENARIO_TOOL_BASE_URL = originalToolBase;
   }
 }
 

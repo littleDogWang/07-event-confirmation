@@ -1,15 +1,25 @@
-# Event reminder and confirmation acceptance
+# Conversation-Only Acceptance
 
-- Event time, timezone, joining instructions and participant identity match the fixtures.
-- Each new review has a unique capability and a fresh registration. Two reviews cannot change one another.
-- Cancellation changes only the current participant registration. Rescheduling changes only that registration session ID; all event times remain unchanged.
-- Unavailable sessions preserve the original state. Cancelled registrations, expired reviews and ended reviews reject new changes.
-- Identical request replay returns the original snapshot without changing the current state; conflicting reuse fails. Returned data cannot mutate the store.
-- Undecided, recording preference and later-contact preference appear only after successful API results. Requested contact notes support up to 500 characters.
-- Recording/later-contact copy does not claim that delivery or a callback happened. Verbal confirmation is not displayed as actual attendance.
-- Results remain visible and downloadable after finishing. New review resets preferences and response. Refresh/restart recovery is not promised.
-- CSV content matches the displayed confirmed snapshot, including selected session and preferences; quotes, line breaks and formula prefixes are handled.
-- A failed tool update must not appear successful. Failed result refresh retains the last confirmed snapshot with an explicit notice.
-- The starter entry card and main identity explain scenario 07. Verify starter components/theme, desktop/mobile layouts, conversation, collapsed event context, auxiliary result and ended states.
-- Start event reminder directly starts voice. Missing HTTPS registration tools do not disable it: the assistant explicitly states it cannot record changes, the response remains unchanged, and the ended result reports No response recorded.
-- Verify local domain/API checks, lint, typecheck and production build separately from real Agora audio/tool acceptance. Browser simulations are not live voice evidence.
+## Local regression
+
+- Run pnpm run verify.
+- A mocked Agent starts with only requester_id and channel_name.
+- Setting the former business-tool origin must not enable tools or create data state.
+- Business API routes return HTTP 410 and old data workbenches are not rendered.
+
+## Browser checks
+
+- Desktop and mobile initial Dialog, Preview first and persistent identity identify this scenario.
+- The start control is enabled without a business record or shopping session.
+- The first application request on start is the token request, with no business API call.
+- A failed token/invite is reported honestly and allows a retry.
+
+## Real voice checks
+
+- Say: What is the webinar about?
+- Say: I am not sure I can attend. Help me review my options.
+- Ask for a recap, interrupt, correct an earlier detail and request to stop.
+- The assistant never claims a lookup, saved result or external action.
+- Check actual two-way audio, both transcript roles, microphone controls and clean Agent stop.
+
+Mocked checks and browser screenshots do not establish real speech, model behavior or public deployment acceptance.

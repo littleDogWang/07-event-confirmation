@@ -13,14 +13,6 @@ import { DEFAULT_AGENT_UID } from '@/lib/agora';
 import { RUNTIME_PROFILE } from '@/lib/runtime-profile';
 import { getScenarioConfig, getScenarioPrompt } from '@/lib/agent-config';
 import { getScenarioTools } from '@/lib/agent-tools';
-import {
-  discussionGreeting,
-  discussionInstructions,
-} from '@/lib/agent-config';
-import {
-  getEventSession,
-  EventError,
-} from '@/lib/event-confirmation/events';
 
 // agentUid identifies the AI in the RTC channel and shares its default with the client.
 const agentUid = String(DEFAULT_AGENT_UID);
@@ -36,7 +28,7 @@ export async function POST(request: NextRequest) {
     // --- 1. Parse request ---
 
     const body: ClientStartRequest = await request.json();
-    const { requester_id, channel_name, event_session_id } = body;
+    const { requester_id, channel_name } = body;
 
     // Validate required env vars on first request so misconfiguration surfaces
     // with a clear error message rather than a silent failure.
@@ -55,23 +47,7 @@ export async function POST(request: NextRequest) {
     // AgoraClient authenticates API calls to the Agora Conversational AI service.
     // area: change to Area.EU or Area.AP for European or Asia-Pacific deployments.
     const scenario = getScenarioConfig();
-    if (!event_session_id)
-      return NextResponse.json(
-        { error: 'event_session_id is required' },
-        { status: 400 },
-      );
-    const eventResult = getEventSession(event_session_id);
-    if (eventResult.ended)
-      return NextResponse.json({ error: 'session_ended' }, { status: 409 });
-    const scenarioTools = getScenarioTools(
-      scenario.id,
-      undefined,
-      event_session_id,
-    );
-    const recordingAvailable = scenarioTools.length > 0;
-    const greeting = recordingAvailable
-      ? scenario.greeting
-      : discussionGreeting;
+    const scenarioTools = getScenarioTools();
     const client = new AgoraClient({
       area: Area.US,
       appId,
@@ -82,13 +58,8 @@ export async function POST(request: NextRequest) {
     // Omit vendor API keys for supported models — AgentKit infers reseller presets on start (see Agora Console / billing).
     const agent = new Agent({
       client,
-      instructions:
-        (recordingAvailable
-          ? getScenarioPrompt(scenario.id)
-          : discussionInstructions) +
-        '\n# Current registration at call start\n' +
-        JSON.stringify(eventResult.registration),
-      greeting,
+      instructions: getScenarioPrompt(scenario.id),
+      greeting: scenario.greeting,
       failureMessage: 'Please wait a moment.',
       maxHistory: 50,
       // VAD controls how the agent detects the start and end of a user's turn.
@@ -111,8 +82,8 @@ export async function POST(request: NextRequest) {
         },
       },
       // RTM is required for transcript events in the browser client.
-      // Enable execution only when this session has configured REST tools.
-      advancedFeatures: { enable_rtm: true, enable_tools: scenarioTools.length > 0 },
+      // This first version never enables business tools.
+      advancedFeatures: { enable_rtm: true, enable_tools: false },
       // Required for browser RTM events:
       // - data_channel: 'rtm' enables RTM delivery path for state/metrics/errors
       // - enable_error_message emits AGENT_ERROR payloads
@@ -140,7 +111,7 @@ export async function POST(request: NextRequest) {
       .withLlm(
         new OpenAI({
           model: RUNTIME_PROFILE.reasoning.model,
-          greetingMessage: greeting,
+          greetingMessage: scenario.greeting,
           failureMessage: 'Please wait a moment.',
           maxHistory: 15,
           tools: scenarioTools.length > 0 ? scenarioTools : undefined,
@@ -155,7 +126,7 @@ export async function POST(request: NextRequest) {
         //   apiKey: requireEnv('NEXT_LLM_API_KEY'),
         //   url: requireEnv('NEXT_LLM_URL'),
         //   model: 'gpt-4o-mini',
-        //   greetingMessage: greeting,
+        //   greetingMessage: scenario.greeting,
         //   failureMessage: 'Please wait a moment.',
         //   maxHistory: 15,
         //   maxTokens: 1024,
@@ -191,13 +162,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       agent_id: agentId,
-      recording_available: recordingAvailable,
       create_ts: Math.floor(Date.now() / 1000),
       state: 'RUNNING',
     } as AgentResponse);
   } catch (error) {
-    if (error instanceof EventError)
-      return NextResponse.json({ error: error.code }, { status: error.status });
     console.error('Error starting conversation:', error);
     return NextResponse.json(
       {
