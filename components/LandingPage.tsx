@@ -22,7 +22,6 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { LoadingSkeleton } from './LoadingSkeleton';
 import {
   QuickstartPreCallCard,
-  ScenarioEntryDialog,
 } from './QuickstartPreCallCard';
 import { ConversationWorkspace } from './ConversationWorkspace';
 
@@ -75,7 +74,6 @@ export default function LandingPage() {
   });
   const [inspection, setInspection] =
     useState<InspectionSnapshot>(EMPTY_INSPECTION);
-  const [entryOpen, setEntryOpen] = useState(true);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [buildOpen, setBuildOpen] = useState(false);
   const [outcome, setOutcome] = useState('');
@@ -171,7 +169,6 @@ export default function LandingPage() {
         startedAt: Date.now(),
       });
       setShowConversation(true);
-      setEntryOpen(false);
     } catch (err) {
       setActivity({ state: 'error', micEnabled: false });
       setInspection((previous) => ({
@@ -397,15 +394,6 @@ export default function LandingPage() {
           </p>
         )}
       </ConversationWorkspace>
-      <ScenarioEntryDialog
-        scenario={scenario}
-        open={entryOpen}
-        onOpenChange={setEntryOpen}
-        isLoading={isLoading}
-        error={showConversation ? null : error}
-        sessionActive={showConversation}
-        onStart={handleStartConversation}
-      />
       <ScenarioInspector
         scenario={scenario}
         snapshot={inspection}

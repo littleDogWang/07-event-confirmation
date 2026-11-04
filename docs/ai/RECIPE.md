@@ -39,7 +39,7 @@ This independent scenario derives from the [official Agora Next.js voice quickst
 ## Extension Points
 
 - lib/agent-config.ts: role, greeting, workflow, guardrails and static public material.
-- lib/presentation.ts: initial Dialog, visible identity and developer guidance.
+- lib/presentation.ts: inline welcome, visible identity and developer guidance.
 - lib/runtime-profile.ts and app/api/invite-agent/route.ts: existing speech/provider settings.
 - lib/agent-tools.ts: intentionally empty; no environment flag enables business tools.
 

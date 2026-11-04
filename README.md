@@ -24,7 +24,7 @@ pnpm run doctor
 pnpm run dev
 ~~~
 
-Open http://localhost:3000. The initial Dialog, preview and persistent header identify this scenario. Starting voice requires the user to choose `Start event reminder` and grant microphone permission.
+Open http://localhost:3000. The page opens directly with an inline welcome and persistent scenario header, without an introductory dialog. Starting voice requires the user to choose `Start event reminder` and grant microphone permission.
 
 With a ready Agora CLI, the optional template-aware environment command is `agora quickstart env write . --template nextjs --project <your-project> --json`. Check CLI readiness before any configuration operation.
 

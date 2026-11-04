@@ -9,7 +9,7 @@
 
 ## Browser checks
 
-- Desktop and mobile initial Dialog, Preview first and persistent identity identify this scenario.
+- Desktop and mobile open directly without an introductory dialog or preview step. Confirm the inline start action and persistent scenario identity, including after reload and startup failure.
 - The start control is enabled without a business record or shopping session.
 - The first application request on start is the token request, with no business API call.
 - A failed token/invite is reported honestly and allows a retry.

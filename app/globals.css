@@ -201,22 +201,6 @@ button:disabled {
   height: auto;
   flex: 1;
 }
-.demo-entry-dialog {
-  max-width: 500px;
-  gap: 20px;
-}
-.demo-entry-dialog [data-slot='dialog-title'] {
-  font-size: 26px;
-  line-height: 34px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  padding-right: 24px;
-}
-.demo-entry-dialog [data-slot='dialog-description'] {
-  font-size: 16px;
-  line-height: 26px;
-  margin-top: 4px;
-}
 .demo-build-dialog {
   max-width: 780px;
   max-height: calc(100dvh - 48px);
@@ -518,10 +502,6 @@ button:disabled {
     max-height: 25%;
     overflow-y: auto;
   }
-  .demo-entry-dialog {
-    max-height: calc(100dvh - 32px);
-    overflow-y: auto;
-  }
 }
 @media (max-width: 480px) {
   .demo-session-heading {
@@ -572,13 +552,6 @@ button:disabled {
   .demo-latency-summary strong {
     font-size: 17px;
     line-height: 26px;
-  }
-  .demo-entry-dialog {
-    padding: 28px 24px;
-  }
-  .demo-entry-dialog [data-slot='dialog-title'] {
-    font-size: 24px;
-    line-height: 32px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -915,12 +888,6 @@ button:disabled {
   font-size: 11px;
   line-height: 20px;
 }
-.demo-entry-dialog .demo-features {
-  margin-top: 0;
-}
-.demo-entry-dialog .demo-built-with {
-  margin-top: 0;
-}
 @media (max-width: 800px) {
   .demo-workspace-ready {
     align-content: start;
@@ -958,6 +925,5 @@ button:disabled {
 .demo-business:empty { display: none; }
 .demo-business h2 { font-size: 22px; line-height: 1.4; }
 .demo-business button, .demo-business input, .demo-business select { max-width: 100%; }
-.demo-entry-dialog { max-height: calc(100dvh - 32px); overflow-y: auto; }
 .demo-session-ended { margin-bottom: 32px; }
 @media (max-width: 800px) { .demo-business { padding: 0 20px 32px; } }
