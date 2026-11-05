@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, useLayoutEffect, useRef, type ReactNode, type RefObject } from 'react';
 
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import {
@@ -15,6 +15,7 @@ import {
   MessageScrollerContent,
   MessageScrollerItem,
   MessageScrollerButton,
+  useMessageScroller,
 } from '@/components/ui/message-scroller';
 
 import type { VoiceState } from '@/components/status';
@@ -41,6 +42,26 @@ export interface ConversationPanelProps {
     content: ReactNode;
   };
 }
+function TranscriptScrollRestoration({
+  hidden,
+  messages,
+  following,
+}: {
+  hidden?: boolean;
+  messages: TranscriptMessage[];
+  following: RefObject<boolean>;
+}) {
+  const { scrollToEnd } = useMessageScroller();
+
+  useLayoutEffect(() => {
+    if (!hidden && following.current) {
+      scrollToEnd({ behavior: 'auto' });
+    }
+  }, [hidden, messages, following, scrollToEnd]);
+
+  return null;
+}
+
 export function ConversationPanel({
   id,
   name = 'IT Support Assistant',
@@ -51,6 +72,9 @@ export function ConversationPanel({
   className,
   agentRun,
 }: ConversationPanelProps) {
+  // Layout changes may move scrollTop; only user input should pause following.
+  const following = useRef(true);
+  const userScrolling = useRef(false);
   const displayedMessages: TranscriptMessage[] =
     messages.length === 0 && !agentRun
       ? [
@@ -78,12 +102,36 @@ export function ConversationPanel({
     >
       <div className="ag-transcript">
         <MessageScrollerProvider autoScroll defaultScrollPosition="end">
+          <TranscriptScrollRestoration hidden={hidden} messages={displayedMessages} following={following} />
           <MessageScroller>
             <MessageScrollerViewport
               role="log"
               aria-label={`${name} live transcript`}
               aria-live="polite"
               tabIndex={0}
+              onWheelCapture={(event) => {
+                userScrolling.current = true;
+                if (event.deltaY < 0) following.current = false;
+              }}
+              onTouchMoveCapture={() => { userScrolling.current = true; }}
+              onPointerDownCapture={() => { userScrolling.current = true; }}
+              onKeyDownCapture={(event) => {
+                if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) {
+                  userScrolling.current = true;
+                  if (['ArrowUp', 'PageUp', 'Home'].includes(event.key) || (event.key === ' ' && event.shiftKey)) following.current = false;
+                }
+              }}
+              onScroll={(event) => {
+                const viewport = event.currentTarget;
+                if (!viewport.clientHeight) return;
+                const atEnd = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight <= 8;
+                if (atEnd) {
+                  following.current = true;
+                  userScrolling.current = false;
+                } else if (userScrolling.current) {
+                  following.current = false;
+                }
+              }}
             >
               <MessageScrollerContent>
                 {displayedMessages.map((message) => (
@@ -139,7 +187,10 @@ export function ConversationPanel({
                 ) : null}
               </MessageScrollerContent>
             </MessageScrollerViewport>
-            <MessageScrollerButton />
+            <MessageScrollerButton behavior="auto" onClick={() => {
+              following.current = true;
+              userScrolling.current = false;
+            }} />
           </MessageScroller>
         </MessageScrollerProvider>
       </div>

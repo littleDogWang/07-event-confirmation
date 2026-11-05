@@ -6,6 +6,8 @@ The first version has no customer lookup or saved business outcome. Legacy tool 
 
 Retain the combined token, StrictMode guard, RTM identity and interrupted turns. Builds, screenshots and mocked API tests do not establish successful audio or model quality.
 
+Transcript visibility can reset the scroller while its viewport has zero height. Keep the last visible follow state and restore it through the existing scroller API when showing the conversation again. Preserve deliberate history reading; Scroll to end resumes following. Check hidden arrivals and streaming text in a rendered desktop/mobile fixture.
+
 ## Related Deep Dives
 
 - [Lifecycle](L2/conversation_lifecycle.md)

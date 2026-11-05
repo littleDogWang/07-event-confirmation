@@ -23,3 +23,7 @@
 - Check actual two-way audio, both transcript roles, microphone controls and clean Agent stop.
 
 Mocked checks and browser screenshots do not establish real speech, model behavior or public deployment acceptance.
+
+## Transcript scrolling
+
+At desktop and mobile widths, check new completed turns and a growing live turn. Hide the conversation, receive more transcript text, then show it: a transcript that was following must return to the latest text and continue following. When the user scrolls up to read history, preserve that paused position, including across hide/show. Scroll to end must restore following for later text. Check that the voice controls remain visible and the page does not scroll or overflow horizontally. Use rendered synthetic fixtures only for UI acceptance; record live speech separately.
