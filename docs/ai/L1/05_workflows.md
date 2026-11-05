@@ -18,6 +18,12 @@ Read [the deployment guide](../../../README.md#deployment). Supply the public Ap
 
 Inspect the actual failing token, Agent, RTC or RTM response. Report setup, transport and provider failures directly; never present synthetic checks as real speech acceptance.
 
+## Improve prompt-based guidance
+
+Edit `lib/agent-config.ts` and `lib/scenario-knowledge.ts` together. Keep business facts grounded in the configured reference; do not treat a date calendar as live availability. `lib/prompt-context.ts` provides current business-local date context without adding an API, provider setting or business session.
+
+Synchronize the scenario guide and acceptance cases. Run `pnpm run verify`; its date-context regressions check UTC/local-date boundaries, daylight saving and month/year transitions. Verify actual model responses and speech separately before claiming conversational acceptance.
+
 ## Related Deep Dives
 
 - [Lifecycle](L2/conversation_lifecycle.md)

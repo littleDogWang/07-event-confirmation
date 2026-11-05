@@ -5,7 +5,7 @@
 | Repo | littleDogWang/07-event-confirmation |
 | Type | Next.js 16 / React 19 / TypeScript voice application |
 | Deploy Target | Native Node.js, Docker or Next.js-compatible serverless host; no business storage |
-| Last Reviewed | 2026-11-04 |
+| Last Reviewed | 2026-11-05 |
 | Recipe Version | 0.3.0 |
 | Recipe Status | draft; local checks do not establish public availability |
 

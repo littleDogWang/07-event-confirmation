@@ -1,3 +1,4 @@
+import { getConversationContext } from '../lib/prompt-context';
 import assert from 'node:assert/strict';
 import { getScenarioConfig, getScenarioPrompt } from '../lib/agent-config';
 import { getScenarioPresentation } from '../lib/presentation';
@@ -10,3 +11,14 @@ assert.match(getScenarioPrompt(), /# First-version boundary/);
 assert.match(getScenarioPrompt(), /No business data lookup/);
 assert.doesNotMatch(getScenarioPrompt(), /AG-100[123]|patient-alex|AST-R3001|travelerKey|participantId/);
 console.log('Scenario conversation contract passed: ' + config.id);
+
+// Calendar regressions: U.S. dates can differ from UTC and offsets change with DST.
+const localNight = getConversationContext('America/New_York', new Date('2026-11-05T02:30:00Z'));
+assert.match(localNight, /Current local date: 2026-11-04/);
+assert.match(localNight, /UTC-05:00/);
+assert.match(getConversationContext('America/New_York', new Date('2026-03-08T06:30:00Z')), /UTC-05:00/);
+assert.match(getConversationContext('America/New_York', new Date('2026-03-08T07:30:00Z')), /UTC-04:00/);
+assert.match(getConversationContext('America/Chicago', new Date('2026-07-01T03:30:00Z')), /Current local date: 2026-06-30/);
+assert.match(getConversationContext('America/New_York', new Date('2026-12-31T17:00:00Z')), /2027-01-01 Friday/);
+assert.match(getConversationContext('America/New_York', new Date('2028-02-28T17:00:00Z')), /2028-02-29 Tuesday; 2028-03-01 Wednesday/);
+console.log('Prompt local-date, DST and calendar regressions passed.');

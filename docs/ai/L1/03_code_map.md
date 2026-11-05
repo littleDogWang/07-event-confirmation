@@ -10,6 +10,13 @@
 - scripts/verify-conversation-only.ts: startup without business state and rejection of legacy tool enablement.
 - docs/scenario/: conversation guide and acceptance.
 
+## Prompt reference ownership
+
+- `lib/scenario-knowledge.ts`: public scenario reference used by the prompt, without private business records or live inventory.
+- `lib/prompt-context.ts`: conversation quality rules, current local date/time zone/UTC offset and a 28-day date calendar.
+- `lib/agent-config.ts`: task flow, greeting, boundaries and assembly of those references.
+- `docs/scenario/acceptance.md`: multi-turn model/speech acceptance cases; these are separate from deterministic local verification.
+
 ## Related Deep Dives
 
 - [Lifecycle](L2/conversation_lifecycle.md)

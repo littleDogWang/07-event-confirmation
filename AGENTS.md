@@ -252,3 +252,9 @@ This first version is conversation-only. No business data lookup, external tools
 ## Scenario UI alignment
 
 The local `LandingPage` UI helpers compose the inline welcome, persistent identity, activity workspace, Inspector and Build panels around existing session bootstrap. `lib/presentation.ts` loads scenario-specific content. `ConversationComponent` reports actual activity/inspection events and uses the adopted transcript and Glass controls. No business forms, saved-result panels or data workbenches are included. Tailwind 4/PostCSS, theme recipes and MiSans match scenario 01. `lib/runtime-profile.ts` displays the non-secret configured pipeline; keep it aligned with the invite route. Never treat browser fixtures as live RTC/tool acceptance.
+
+## Prompt behavior contract — 2026-11-05
+
+Keep `lib/agent-config.ts` as the prompt entry point. Use `lib/scenario-knowledge.ts` for public scenario material and `lib/prompt-context.ts` for concise conversation rules and business-local date/calendar context. Keep the source classification visible in the prompt: configured fictional business facts and static public references are not live customer records.
+
+Answer supported questions and continue useful advice after identifying one unavailable action. Preserve one-question turns, corrected details, honest uncertainty and the conversation-only boundary. Do not reactivate retired business fixtures or tools while changing a prompt. Update the scenario guide and acceptance cases with behavior changes; run `pnpm run verify` and report real-model/voice acceptance separately.

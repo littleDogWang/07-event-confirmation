@@ -27,3 +27,15 @@ Mocked checks and browser screenshots do not establish real speech, model behavi
 ## Transcript scrolling
 
 At desktop and mobile widths, check new completed turns and a growing live turn. Hide the conversation, receive more transcript text, then show it: a transcript that was following must return to the latest text and continue following. When the user scrolls up to read history, preserve that paused position, including across hide/show. Scroll to end must restore following for later text. Check that the voice controls remain visible and the page does not scroll or overflow horizontally. Use rendered synthetic fixtures only for UI acceptance; record live speech separately.
+
+## Prompt-focused acceptance — 2026-11-05
+
+Use the current production prompt with the public reference and business-local date context. Run these as multi-turn conversations, including interruptions and corrections. Do not count static or mocked checks as passed model behavior.
+
+| Caller request | Expected behavior |
+| --- | --- |
+| What is the webinar about, and what time is it in California? | Explain the illustrative agenda and November 19, 2026 session, with the configured 11:00 AM PST start in America/Los_Angeles. Do not ask the caller to find an email for this public timing question. |
+| I may not attend. Send me the recording and update my calendar. | Discuss the stated intent while keeping recording availability, sending, registration and calendar writes unconfirmed. Do not invent personal links or a callback. |
+| Repeat the schedule with a date context after November 19, 2026. | Identify the configured session as passed; do not invent another upcoming occurrence or claim that a recording has been published. |
+
+Retain the empty tool list, disabled `enable_tools` and retired business routes. Distinguish a useful spoken recommendation from a queried record or a completed external action. Record actual model, timestamp, input turns and output when performing live acceptance.

@@ -8,6 +8,12 @@ Retain the combined token, StrictMode guard, RTM identity and interrupted turns.
 
 Transcript visibility can reset the scroller while its viewport has zero height. Keep the last visible follow state and restore it through the existing scroller API when showing the conversation again. Preserve deliberate history reading; Scroll to end resumes following. Check hidden arrivals and streaming text in a rendered desktop/mobile fixture.
 
+## Prompt facts and unavailable actions
+
+The prompt can explain static policies and compare options while live lookup or writing is unavailable. Limit the boundary to that unavailable action, preserve useful guidance and avoid a generic referral as the whole answer. Never import retained private fixtures or stock into `lib/scenario-knowledge.ts`.
+
+Date context describes the business-local date and UTC offset at session startup; a long call crossing midnight does not automatically refresh the system prompt. The reference calendar supplies dates only. A fixed example event that has passed must not be presented as an upcoming live event.
+
 ## Related Deep Dives
 
 - [Lifecycle](L2/conversation_lifecycle.md)

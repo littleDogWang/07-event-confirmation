@@ -71,3 +71,9 @@ Keep certificates and any optional custom-LLM credentials server-only. Report se
 ## Attribution
 
 Derived from [the official Agora Next.js voice quickstart](https://github.com/AgoraIO-Conversational-AI/agent-quickstart-nextjs). Retain [the license](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md).
+
+## Prompt guidance update — 2026-11-05
+
+The scenario now includes task-specific follow-ups, grounded recommendations and a business-local date calendar. Public reference material lives in `lib/scenario-knowledge.ts`; conversation/date rules live in `lib/prompt-context.ts`. Configured scenario reference, explicitly separate from live business records. No business tool or record-saving capability is enabled.
+
+See [the updated scenario guide](docs/scenario/README.md) and [multi-turn acceptance cases](docs/scenario/acceptance.md). `pnpm run verify` covers local contracts, calendar regressions and build checks; actual model and voice quality require separate real conversations.
