@@ -8,7 +8,7 @@ Discuss a webinar, attendance plans and questions about joining.
 
 This first version is conversation-only. No business data lookup, external tools, database, record writes, saved results, or cross-session business history are available. Keep user-provided details only in the current conversation. Never claim an order, appointment, registration, feedback submission, callback, payment, shipment or other external action was created, saved or completed. Offer a verbal summary and explain the appropriate human next step instead. Do not request passwords, verification codes, payment details or unnecessary personal identifiers.
 
-The application exposes only the token, Agent invite, stop and optional custom-LLM proxy routes. Business APIs are disabled and return HTTP 410; customer records, result stores and data workbenches are not used by the first version. Static public reference material is part of the prompt; it is not queried as a business service.
+The application exposes only the token, Agent invite and stop routes. Business APIs are disabled and return HTTP 410; customer records, result stores and data workbenches are not used by the first version. Static public reference material is part of the prompt; it is not queried as a business service.
 
 ## Run it
 
@@ -60,13 +60,13 @@ The image runs as a non-root user. Build and runtime App IDs must match. Do not 
 
 ## Architecture and customization
 
-See [architecture](ARCHITECTURE.md), [the public recipe](RECIPE.md), [the internal contract](docs/ai/RECIPE.md) and [the scenario guide](docs/scenario/README.md). Edit lib/agent-config.ts for behavior, lib/presentation.ts for copy and lib/runtime-profile.ts for the non-secret provider settings.
+See [architecture](ARCHITECTURE.md), [the public recipe](RECIPE.md), [contributor guide](AGENTS.md) and [the scenario guide](docs/scenario/README.md). Edit lib/agent-config.ts for behavior, lib/presentation.ts for copy and lib/runtime-profile.ts for the non-secret provider settings.
 
 ## Limits and security
 
 No business data is queried or saved by this application. Current-call transcript and Inspector state are held in the page and disappear on refresh. This does not describe the retention policies of external voice/model providers. Sample token/start/stop endpoints are not production login or abuse controls; configure appropriate public-demo access and usage limits before a public release.
 
-Keep certificates and any optional custom-LLM credentials server-only. Report security issues privately to security@agora.io. Real speech, model quality and public hosting have not been established by mocked checks.
+Keep certificates server-only. Report security issues privately to security@agora.io. Real speech, model quality and public hosting have not been established by mocked checks.
 
 ## Attribution
 

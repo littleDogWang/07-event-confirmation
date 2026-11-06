@@ -4,7 +4,6 @@
 @import '../styles/agent-ui/recipes.css';
 @import '../styles/agent-ui/theme.css';
 @import '../styles/agent-ui/website-theme.css';
-@import '../styles/business.css';
 @source "../node_modules/agora-agent-uikit/dist";
 
 :root {

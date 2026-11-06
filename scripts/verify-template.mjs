@@ -8,23 +8,19 @@ const pkg = JSON.parse(read('package.json'));
 const id = pkg.name;
 assert.ok(!fs.existsSync(path.join(root, 'scenarios')), 'Use the standalone Quickstart layout, not a root scenario registry.');
 const required = [
-  'lib/agent-config.ts', 'lib/agent-tools.ts', 'lib/chat-completions.ts', 'lib/presentation.ts',
+  'lib/agent-config.ts', 'lib/agent-tools.ts', 'lib/presentation.ts',
   'lib/runtime-profile.ts', 'types/agent-config.ts', 'types/presentation.ts',
   'docs/scenario/README.md', 'docs/scenario/acceptance.md', 'THIRD_PARTY_NOTICES.md',
   'scripts/verify-signal-states.ts', 'scripts/verify-inspection.ts',
-  'README.md', 'RECIPE.md', 'AGENTS.md', 'ARCHITECTURE.md', 'CONTRIBUTING.md',
+  'README.md', 'RECIPE.md', 'AGENTS.md', 'ARCHITECTURE.md',
   'CLAUDE.md', 'LICENSE', '.gitignore', '.dockerignore', 'Dockerfile',
   '.github/workflows/ci.yml', '.github/workflows/docker.yml', 'env.local.example',
-  'docs/ai/L0_repo_card.md', 'docs/ai/RECIPE.md', 'docs/ai/L1/L2/_index.md',
-  ...['01_setup', '02_architecture', '03_code_map', '04_conventions',
-    '05_workflows', '06_interfaces', '07_gotchas', '08_security']
-    .map((name) => 'docs/ai/L1/' + name + '.md'),
+
 ];
 for (const file of required) assert.ok(fs.existsSync(path.join(root, file)), 'Missing ' + file);
 for (const file of ['tailwind.config.ts', 'components/ScenarioShell.tsx', 'docs/scenario/design.md']) {
   assert.ok(!fs.existsSync(path.join(root, file)), 'Obsolete standalone source: ' + file);
 }
-assert.ok(!read('app/api/chat/completions/route.ts').includes('export function'), 'Keep implementation helpers out of the HTTP route exports.');
 assert.equal(JSON.parse(read('components.json')).tailwind.config, '', 'Tailwind 4 uses CSS configuration.');
 assert.match(read('postcss.config.mjs'), /@tailwindcss\/postcss/);
 for (const file of ['app/page.tsx', 'components/LandingPage.tsx']) {
@@ -44,8 +40,6 @@ assert.match(read('Dockerfile'), /pnpm@9\.15\.9/);
 assert.match(read('.github/workflows/ci.yml'), /version: 9\.15\.9/);
 assert.match(read('.github/workflows/ci.yml'), /pnpm run verify/);
 assert.match(read('.github/workflows/docker.yml'), /pnpm run verify:docker/);
-assert.ok(read('docs/ai/L0_repo_card.md').includes('littleDogWang/' + id), 'L0 must identify this repository.');
-assert.ok(read('docs/ai/RECIPE.md').startsWith('---\nrecipe_version:'), 'Missing recipe frontmatter.');
 assert.equal((read('RECIPE.md').match(/^## [1-8]\. /gm) ?? []).length, 8, 'Public recipe needs eight sections.');
 for (const file of required.filter((file) => file.endsWith('.md'))) {
   const text = read(file);
@@ -55,15 +49,12 @@ for (const file of required.filter((file) => file.endsWith('.md'))) {
     const destination = target.split('#')[0];
     assert.ok(fs.existsSync(path.resolve(root, path.dirname(file), destination)), file + ': broken link ' + target);
   }
-  if (/docs\/ai\/L1\/\d/.test(file)) {
-    assert.equal([...text.matchAll(/^## (.+)$/gm)].at(-1)?.[1], 'Related Deep Dives', file + ': final section');
-  }
 }
 for (const command of Object.keys(pkg.scripts).filter((key) => key.startsWith('verify:') && key !== 'verify:docker')) {
   assert.ok(pkg.scripts.verify.includes('pnpm run ' + command), 'Canonical verify omits ' + command);
 }
 if (pkg.scripts['test:follow-up']) assert.ok(pkg.scripts.verify.includes('pnpm run test:follow-up'));
-for (const file of ['README.md', 'AGENTS.md', 'docs/ai/L1/01_setup.md']) {
+for (const file of ['README.md', 'AGENTS.md']) {
   const text = read(file);
   assert.ok(text.includes('env.local.example') && text.includes('.env.local'), file + ': environment path missing');
   assert.ok(!text.includes('agora project env write'), file + ': use the template-aware env writer');
