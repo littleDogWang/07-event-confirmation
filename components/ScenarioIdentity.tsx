@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { Button } from './ui/button';
+import { DialogTrigger } from './ui/dialog';
 import type { ScenarioPresentation } from '@/lib/presentation';
 
 export function ScenarioIdentity({
@@ -59,6 +60,16 @@ export function ScenarioIdentity({
         </div>
       </div>
       <nav className="demo-header-actions" aria-label="Demo tools">
+        <DialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Open FAQ"
+            title="FAQ"
+          >
+            <span className="demo-tool-label">FAQ</span>
+          </Button>
+        </DialogTrigger>
         <Button
           variant="ghost"
           size="sm"

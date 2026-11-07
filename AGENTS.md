@@ -90,3 +90,7 @@ Keep README, AGENTS, RECIPE, ARCHITECTURE and the affected scenario guide/checkl
 - **No git config changes** — do not modify `user.name` or `user.email`.
 
 Local implementation does not authorize a commit. A commit does not authorize a push or GitHub write; each requires explicit current-conversation authorization. Preserve unrelated local changes and never alter Git identity or bypass hooks.
+
+## Usage FAQ contract
+
+Keep FAQ in the upper-right header beside Inspector and Build. `components/ScenarioFaq.tsx` and `styles/faq.css` follow the Voice Shopping drawer pattern: closed on entry, right-side on desktop, full-width on mobile, internally scrollable, and keyboard accessible. Opening FAQ must not start a session or request microphone access. Keep answers consistent with this scenario’s conversation-only scope. Preserve the coach Phrasebook where present.

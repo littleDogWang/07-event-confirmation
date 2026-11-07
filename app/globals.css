@@ -4,6 +4,7 @@
 @import '../styles/agent-ui/recipes.css';
 @import '../styles/agent-ui/theme.css';
 @import '../styles/agent-ui/website-theme.css';
+@import '../styles/faq.css';
 @source "../node_modules/agora-agent-uikit/dist";
 
 :root {
@@ -926,3 +927,16 @@ button:disabled {
 .demo-business button, .demo-business input, .demo-business select { max-width: 100%; }
 .demo-session-ended { margin-bottom: 32px; }
 @media (max-width: 800px) { .demo-business { padding: 0 20px 32px; } }
+
+@media (max-width: 480px) {
+  .demo-header {
+    flex-wrap: wrap;
+  }
+  .demo-brand-group {
+    flex-basis: 100%;
+  }
+  .demo-header-actions {
+    margin-left: auto;
+    gap: 4px;
+  }
+}

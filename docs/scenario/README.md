@@ -46,3 +46,7 @@ These are expected behaviors for real-model and speech acceptance, not recorded 
 - [Detailed acceptance](acceptance.md)
 
 Run `pnpm run verify`. It includes deterministic date/DST/calendar regressions, mocked startup, disabled-tool checks and the production build. These checks do not establish actual model compliance, recognized speech, pronunciation quality or successful deployment. Use the cases above in a real conversation separately.
+
+## Usage FAQ
+
+FAQ in the upper-right header opens scenario-specific setup, example requests, capability limits and microphone troubleshooting. It uses the shared right-side drawer, remains closed on entry and does not start a conversation. The answers describe the current conversation-only behavior.

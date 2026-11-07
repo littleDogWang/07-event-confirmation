@@ -85,3 +85,7 @@ See [the updated scenario guide](docs/scenario/README.md) and [multi-turn accept
 ## Public display name
 
 The header, main heading and browser title use `presentation.name`. The subtitle describes the task. Keep internal numeric IDs out of public page and Build copy.
+
+## Usage FAQ
+
+Open FAQ in the upper-right header beside Inspector and Build for conversation setup, example requests, scenario limits and microphone troubleshooting. The right-side drawer stays closed until requested; reading it does not start a voice session or request microphone access.

@@ -55,3 +55,7 @@ Edit lib/agent-config.ts for the role, workflow, greeting and static public refe
 Follow [deployment instructions](README.md#deployment). Run pnpm run verify; run pnpm run verify:docker separately when checking the container. Supply the public App ID at build and runtime and keep the App Certificate server-only.
 
 Mocked startup and build checks do not establish real speech quality or hosted connectivity. Verify actual two-way speech, transcript, interruptions, error handling and clean stop with real project credentials.
+
+## Usage FAQ
+
+Choose FAQ in the header to read scenario-specific usage answers in a right-side drawer. It is available before starting a conversation and does not start a session.

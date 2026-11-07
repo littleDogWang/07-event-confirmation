@@ -3,6 +3,8 @@
 import { useState, useRef, Suspense, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { ScenarioIdentity } from './ScenarioIdentity';
+import { Dialog } from './ui/dialog';
+import { ScenarioFaq } from './ScenarioFaq';
 import { Alert, AlertDescription } from './ui/alert';
 import { Button } from './ui/button';
 import type { RTMClient } from 'agora-rtm';
@@ -287,11 +289,14 @@ export default function LandingPage() {
 
   return (
     <div className="demo-shell">
-      <ScenarioIdentity
-        scenario={scenario}
-        onInspect={() => setInspectorOpen(true)}
-        onBuild={() => setBuildOpen(true)}
-      />
+      <Dialog>
+        <ScenarioIdentity
+          scenario={scenario}
+          onInspect={() => setInspectorOpen(true)}
+          onBuild={() => setBuildOpen(true)}
+        />
+        <ScenarioFaq />
+      </Dialog>
       <ConversationWorkspace
         scenario={scenario}
         activity={

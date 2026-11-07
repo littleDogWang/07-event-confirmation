@@ -43,3 +43,10 @@ Retain the empty tool list, disabled `enable_tools` and retired business routes.
 ## Public identity acceptance — 2026-11-05
 
 At 1440x1000 and 390x844, compare the header, main heading and browser title: all must use the same public name. Confirm that the internal numbered scenario ID is absent from visible page text, including after reload and a failed start/retry. Open Build and its assistant prompt; use the public name there as well. Check wrapping, control visibility and horizontal overflow. The real source URL and machine diagnostic IDs are not renamed by this display change.
+
+## Usage FAQ acceptance
+
+- Confirm FAQ appears in the header beside Inspector and Build and stays closed on direct entry and reload.
+- Open FAQ on desktop and mobile; expand and collapse answers by pointer and keyboard. Check scenario-specific examples and capability boundaries.
+- Check close button, Escape and desktop backdrop dismissal, focus trapping and focus return to FAQ. Scroll the drawer on short screens to read the last answer.
+- Confirm FAQ does not request microphone access or call token, invite or business APIs. Inspector, Build and the coach Phrasebook still open independently.
