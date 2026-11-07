@@ -1,6 +1,4 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-const repositoryName: string = JSON.parse(readFileSync('package.json', 'utf8')).name;
 import {
   latencySummary,
   normalizeSdkTurn,
@@ -9,6 +7,7 @@ import {
   validModuleMetric,
 } from '../lib/inspection';
 import { getScenarioPresentation } from '../lib/presentation';
+import { getScenarioConfig } from '../lib/agent-config';
 
 assert.equal(parseRawTurn({ object: 'message.metrics' }), null);
 assert.equal(
@@ -89,12 +88,12 @@ for (let id = 2; id <= 80; id++)
 assert.equal(window.length, 50);
 assert.equal(window[0].turnId, 31);
 const scenario = getScenarioPresentation();
-assert.equal(scenario.id, repositoryName);
+assert.equal(scenario.id, getScenarioConfig().id);
 assert.ok(
   scenario.summary && scenario.startLabel && scenario.outcomes.length > 0,
 );
 assert.ok(
-  !scenario.developer.runCommand.includes('--recipe ' + repositoryName.slice(3)),
+  !scenario.developer.runCommand.includes('--recipe '),
   'A scenario must not advertise an unregistered CLI recipe',
 );
 console.log(

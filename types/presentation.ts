@@ -2,7 +2,6 @@ export interface ScenarioPresentation {
   id: string;
   name: string;
   purpose: string;
-  headline: string[];
   summary: string;
   featuresHeading: string;
   features: { emoji: string; title: string }[];

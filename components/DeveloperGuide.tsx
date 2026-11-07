@@ -143,7 +143,7 @@ export function DeveloperGuide({
           aria-label="Agora developer resources"
         >
           <a href={d.sourceUrl} target="_blank" rel="noopener noreferrer">
-            Source <ArrowUpRight aria-hidden="true" />
+            Source (pending) <ArrowUpRight aria-hidden="true" />
           </a>
           <a href={d.docsUrl} target="_blank" rel="noopener noreferrer">
             Build guide <ArrowUpRight aria-hidden="true" />

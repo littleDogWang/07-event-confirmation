@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { getScenarioPresentation } from '@/lib/presentation';
 import { UiProviders } from '@/components/UiProviders';
 
 export const viewport: Viewport = {
@@ -8,8 +9,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Event Reminder Assistant | Agora',
-  description: 'Review the event with Riley and record your attendance plans when tools are connected.',
+  title: getScenarioPresentation().name + ' | Agora',
+  description: getScenarioPresentation().summary,
   icons: {
     icon: [
       { url: '/favicon.ico' },

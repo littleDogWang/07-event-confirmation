@@ -55,9 +55,7 @@ export function ScenarioIdentity({
         </a>
         <div className="demo-identity">
           <h1>{scenario.name}</h1>
-          <p>
-            {scenario.id} · {scenario.purpose}
-          </p>
+          <p>{scenario.purpose}</p>
         </div>
       </div>
       <nav className="demo-header-actions" aria-label="Demo tools">

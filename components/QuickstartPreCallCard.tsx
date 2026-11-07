@@ -57,14 +57,7 @@ export function QuickstartPreCallCard({
 }) {
   return (
     <section className="demo-welcome">
-      <h2>
-        {scenario.headline.map((line, index) => (
-          <span key={line}>
-            {index > 0 ? <br /> : null}
-            {line}
-          </span>
-        ))}
-      </h2>
+      <h2>{scenario.name}</h2>
       <p className="demo-lead">{scenario.summary}</p>
       <ScenarioFeatures scenario={scenario} />
       <div className="demo-welcome-actions">

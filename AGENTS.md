@@ -1,11 +1,11 @@
 # Agent Development Guide
 
-This guide is for coding agents making changes in `07-event-confirmation`.
+This guide is for coding agents making changes in `event-reminder-assistant`.
 
 ## Shared scenario UI requirements
 
 1. **Open the main page directly**: show the scenario explanation and task-specific start action inline. Do not add an introductory dialog, automatic welcome overlay, or Preview first step. Connecting, errors and retry feedback stay inline. Loading the page must not start a session or request microphone access.
-2. **Keep the scenario identity visible**: the scenario name, identifier and short purpose remain visible on desktop and mobile from first load and throughout the session. Activity status must not replace the scenario name.
+2. **Keep the public scenario identity visible**: the public scenario name and short purpose remain visible on desktop and mobile from first load and throughout the session. The header and main heading use the same public name. Keep internal numeric IDs out of visible page and Build copy. Activity status must not replace the scenario name.
 3. **Use our UIkit components**: adopt actual component source and accompanying theme/styles from [shczhen/agent-ui](https://github.com/shczhen/agent-ui), connected to real session data and actions. Preserve source provenance and RTC/RTM ownership.
 
 Inspect desktop/mobile direct entry, reload and inline startup failure/retry states. Confirm there is no introductory overlay and that the main start control directly starts the existing session flow. Inspect actual screenshots before acceptance. Inspector, Build and the coach phrasebook open only on explicit user actions.
@@ -52,6 +52,10 @@ Use Node.js 24 from .nvmrc and pnpm 9.15.9. Install with pnpm install --frozen-l
 Keep `lib/agent-config.ts` as the prompt entry point. Use `lib/scenario-knowledge.ts` for public scenario material and `lib/prompt-context.ts` for concise conversation rules and business-local date/calendar context. Keep the source classification visible in the prompt: configured fictional business facts and static public references are not live customer records.
 
 Answer supported questions and continue useful advice after identifying one unavailable action. Preserve one-question turns, corrected details, honest uncertainty and the conversation-only boundary. Do not reactivate retired business fixtures or tools while changing a prompt. Update the scenario guide and acceptance cases with behavior changes; run `pnpm run verify` and report real-model/voice acceptance separately.
+
+## Public presentation ownership
+
+`lib/presentation.ts` owns the single public `name`, purpose and summary. The header and main heading both render that name; `app/layout.tsx` derives browser metadata from it. There is no separate headline field. Internal IDs stay available for diagnostics and configuration, without being rendered as public identity text.
 
 ## Verification and maintenance
 

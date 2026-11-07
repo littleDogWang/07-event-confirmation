@@ -39,3 +39,7 @@ Use the current production prompt with the public reference and business-local d
 | Repeat the schedule with a date context after November 19, 2026. | Identify the configured session as passed; do not invent another upcoming occurrence or claim that a recording has been published. |
 
 Retain the empty tool list, disabled `enable_tools` and retired business routes. Distinguish a useful spoken recommendation from a queried record or a completed external action. Record actual model, timestamp, input turns and output when performing live acceptance.
+
+## Public identity acceptance — 2026-11-05
+
+At 1440x1000 and 390x844, compare the header, main heading and browser title: all must use the same public name. Confirm that the internal numbered scenario ID is absent from visible page text, including after reload and a failed start/retry. Open Build and its assistant prompt; use the public name there as well. Check wrapping, control visibility and horizontal overflow. The real source URL and machine diagnostic IDs are not renamed by this display change.
